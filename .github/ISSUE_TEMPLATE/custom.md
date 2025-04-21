@@ -24,5 +24,5 @@ assignees: ''
 - 필요 시 팀원들에게 확인 요청
 
 ## 💬 결과 공유 위치
-- Wiki
+- Wiki (실제 Wiki 경로)
 - 또는 Notion 링크 공유 예정
