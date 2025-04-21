@@ -1,6 +1,6 @@
 ---
 name: Custom issue template
-about: Describe this issue template's purpose here.
+about: 새로운 이슈를 작성해주세요.
 title: ''
 labels: ''
 assignees: ''
