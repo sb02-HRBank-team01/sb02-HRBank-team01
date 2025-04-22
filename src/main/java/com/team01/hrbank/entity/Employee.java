@@ -33,7 +33,7 @@ public class Employee extends BaseUpdatableEntity {
   private String employeeNumber = UUID.randomUUID().toString();
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "dept_id")
+  @JoinColumn(name = "dept_id", nullable = false)
   private Department department;
 
   @Column(nullable = false)
