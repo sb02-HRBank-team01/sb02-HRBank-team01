@@ -1,7 +1,6 @@
 package com.team01.hrbank.repository;
 
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
-import com.team01.hrbank.entity.BinaryContent;
 import java.io.InputStream;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
