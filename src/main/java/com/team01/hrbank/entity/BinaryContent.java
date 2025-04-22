@@ -19,11 +19,11 @@ public class BinaryContent extends BaseEntity{
 
 
     @Column(name = "file_name",nullable = false)
-    String fileName;
+    private  String fileName;
     @Column(name = "size",nullable = false)
-    Long size;
+    private Long size;
     @Column(name ="content_type",nullable = false)
-    String contentType;
+    private String contentType;
 
 
     public BinaryContent(String fileName,Long size,String contentType){
