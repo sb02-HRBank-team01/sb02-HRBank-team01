@@ -1,12 +1,20 @@
-package com.team01.hrbank.service;
+package com.team01.hrbank.service.binarycontent;
 
-import com.team01.hrbank.dto.department.BinaryContent.BinaryContentCreateRequest;
-import com.team01.hrbank.dto.department.BinaryContent.BinaryContentDto;
+
+import com.team01.hrbank.dto.binarycontent.BinaryContentCreateRequest;
+import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import com.team01.hrbank.entity.BinaryContent;
-import com.team01.hrbank.mapper.BinaryContentMapper;
+
+import com.team01.hrbank.mapper.binarycontent.BinaryContentMapper;
+import com.team01.hrbank.repository.BinaryContentRepository;
+import com.team01.hrbank.repository.BinaryContentStorage;
 import java.util.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
+@RequiredArgsConstructor
 public class BinaryContentServiceImpl implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
@@ -28,21 +36,21 @@ public class BinaryContentServiceImpl implements BinaryContentService {
 
     @Transactional(readOnly = true)
     @Override
-    public BinaryContentDto find(UUID binaryContentId) {
+    public BinaryContentDto find(Long binaryContentId) {
         return binaryContentRepository.findById(binaryContentId).map(binaryContentMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("해당 사원의 아이디가 존재하지 않습니다."));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+    public List<BinaryContentDto> findAllByIdIn(List<Long> binaryContentIds) {
         return binaryContentRepository.findAllById(binaryContentIds).stream()
             .map(binaryContentMapper::toDto).toList();
     }
 
     @Transactional
     @Override
-    public void delete(UUID binaryContentId) {
+    public void delete(Long binaryContentId) {
         if (!binaryContentRepository.existsById(binaryContentId)) {
             throw new NoSuchElementException(
                 "BinaryContent with id " + binaryContentId + " not found");
