@@ -1,29 +1,36 @@
 package com.team01.hrbank.entity;
 
+import jakarta.persistence.Access;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table
-@Entity(name = "binary_contents")
+@Table(name = "binary_contents")
+@Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BinaryContent extends BaseEntity {
+@NoArgsConstructor
+public class BinaryContent extends BaseEntity{
+
 
     @Column(name = "file_name",nullable = false)
     private  String fileName;
     @Column(name = "size",nullable = false)
-    private  Long size;
+    private Long size;
     @Column(name ="content_type",nullable = false)
-    private  String contentType;
+    private String contentType;
 
 
-    public BinaryContent(String fileName, Long size, String contentType){
+    public BinaryContent(String fileName,Long size,String contentType){
         this.fileName = fileName;
-        this.size=size;
-        this.contentType=contentType;
+        this.size = size;
+        this.contentType = contentType;
     }
+
+
 }
