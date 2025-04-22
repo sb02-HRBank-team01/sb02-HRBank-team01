@@ -1,6 +1,6 @@
-package com.team01.hrbank.mapper;
+package com.team01.hrbank.mapper.binarycontent;
 
-import com.team01.hrbank.dto.BinaryContent.BinaryContentDto;
+import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import com.team01.hrbank.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
