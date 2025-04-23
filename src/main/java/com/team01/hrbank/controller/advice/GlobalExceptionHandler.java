@@ -2,6 +2,7 @@ package com.team01.hrbank.controller.advice;
 
 import com.team01.hrbank.dto.error.ErrorResponse;
 import com.team01.hrbank.exception.DuplicateException;
+import com.team01.hrbank.exception.EntityNotFoundException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +55,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(error);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.NOT_FOUND.value(),
+            "찾을 수 없습니다.",
+            ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 }
