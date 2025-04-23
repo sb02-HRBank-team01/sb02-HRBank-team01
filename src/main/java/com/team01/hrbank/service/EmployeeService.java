@@ -15,4 +15,5 @@ public interface EmployeeService {
       String status, String cursor, Long idAfter,
       int size, String sortField, String sortDirection
   );
+  EmployeeDto findById(Long id);
 }

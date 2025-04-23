@@ -8,6 +8,7 @@ import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.exception.DuplicateException;
+import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.EmployeeMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
@@ -33,6 +34,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
 
+    private static final String EMPLOYEE = "직원";
+    private static final String DEPARTMENT = "부서";
+
+
     @Override
     @Transactional
     public EmployeeDto save(EmployeeCreateRequest employeeCreateRequest, MultipartFile profile) throws IOException {
@@ -41,10 +46,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Department department = departmentRepository.findById(employeeCreateRequest.departmentId())
-            .orElseThrow(
-                // 수정 예정
-                () -> new NoSuchElementException("존재하지 않는 부서입니다. : " + employeeCreateRequest.departmentId())
-            );
+            .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, employeeCreateRequest.departmentId()));
 
         BinaryContent binaryContent = null;
         if (profile != null && !profile.isEmpty()) {
@@ -69,6 +71,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CursorPageResponseEmployeeDto<EmployeeDto> findAll(
         String nameOrEmail, String employeeNumber, String departmentName,
         String position, LocalDate hireDateFrom, LocalDate hireDateTo,
@@ -99,6 +102,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             content, nextCursor, nextIdAfter, size,
             employees.getNumberOfElements(), hasNext
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeDto findById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+        return employeeMapper.toDto(employee);
     }
 
     private String getSortValue(Employee employee, String sortField) {
