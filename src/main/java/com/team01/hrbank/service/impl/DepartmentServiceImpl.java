@@ -8,6 +8,7 @@ import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
+import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
+    private final EmployeeRepository employeeRepository;
     private static final String DEPARTMENT = "부서";
 
     @Override
@@ -53,5 +55,19 @@ public class DepartmentServiceImpl implements DepartmentService {
         department.update(request.name(), request.description(), request.establishedDate());
 
         return departmentMapper.toDto(department, 0L);
+    }
+
+    @Override
+    @Transactional
+    public void deleteDepartment(Long departmentId) {
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, departmentId));
+
+        if (employeeRepository.existsByDepartmentId(departmentId)) {
+            throw new IllegalStateException("해당 부서에 소속된 직원이 있어 삭제할 수 없습니다.");
+        }
+
+        departmentRepository.delete(department);
+
     }
 }
