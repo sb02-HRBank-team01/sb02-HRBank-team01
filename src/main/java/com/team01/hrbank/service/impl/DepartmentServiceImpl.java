@@ -5,6 +5,7 @@ import com.team01.hrbank.dto.department.DepartmentDto;
 import com.team01.hrbank.dto.department.DepartmentUpdateRequest;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.exception.DuplicateException;
+import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.service.DepartmentService;
@@ -18,6 +19,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
+    private static final String DEPARTMENT = "부서";
 
     @Override
     @Transactional
@@ -42,7 +44,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Transactional
     public DepartmentDto updateDepartment(Long departmentId, DepartmentUpdateRequest request) {
         Department department = departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부서입니다. ID:" + departmentId));
+            .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, departmentId));
 
         if (departmentRepository.existsByNameAndIdNot(request.name(), departmentId)) {
             throw new DuplicateException(request.name());
