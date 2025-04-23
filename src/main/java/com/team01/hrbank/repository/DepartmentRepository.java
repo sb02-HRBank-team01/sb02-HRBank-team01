@@ -3,7 +3,11 @@ package com.team01.hrbank.repository;
 import com.team01.hrbank.entity.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DepartmentRepository extends JpaRepository<Department, Integer> {
+public interface DepartmentRepository extends JpaRepository<Department, Long> {
+
     boolean existsByName(String name);
+
+    // 수정 시, 자기 자신(ID)을 제외한 중복 체크
+    boolean existsByNameAndIdNot(String name, Long id);
 
 }

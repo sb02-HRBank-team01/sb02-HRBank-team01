@@ -1,7 +1,8 @@
 package com.team01.hrbank.controller.advice;
 
 import com.team01.hrbank.dto.error.ErrorResponse;
-import com.team01.hrbank.exception.DuplicateDepartmentNameException;
+import com.team01.hrbank.exception.DuplicateException;
+import com.team01.hrbank.exception.EntityNotFoundException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +44,8 @@ public class GlobalExceptionHandler {
     }
 
     // 400: 부서 등록 시 이미 존재하는 부서명이 있을 경우 발생하는 예외 처리
-    @ExceptionHandler(DuplicateDepartmentNameException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateDepartmentNameException ex) {
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateException ex) {
         ErrorResponse error = new ErrorResponse(
             Instant.now(),
             HttpStatus.BAD_REQUEST.value(),
@@ -54,5 +55,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(error);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.NOT_FOUND.value(),
+            "찾을 수 없습니다.",
+            ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 }
