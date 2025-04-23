@@ -4,6 +4,8 @@ import com.team01.hrbank.constraint.EmployeeStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -43,6 +45,7 @@ public class Employee extends BaseUpdatableEntity {
     private LocalDate hireDate;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private EmployeeStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

@@ -1,7 +1,6 @@
 package com.team01.hrbank.constraint;
 
 import lombok.Getter;
-
 @Getter
 public enum EmployeeStatus {
   ACTIVE("재직중"),
@@ -12,5 +11,10 @@ public enum EmployeeStatus {
 
   EmployeeStatus(String description) {
     this.description = description;
+  }
+
+  @Override
+  public String toString() {
+    return this.description;
   }
 }
