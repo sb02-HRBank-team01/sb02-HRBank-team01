@@ -29,4 +29,10 @@ public class Department extends BaseUpdatableEntity{
         this.description = description;
         this.establishedDate = establishedDate;
     }
+
+    public void update(String name, String description, LocalDate establishedDate) {
+        this.name = name;
+        this.description = description;
+        this.establishedDate = establishedDate;
+    }
 }

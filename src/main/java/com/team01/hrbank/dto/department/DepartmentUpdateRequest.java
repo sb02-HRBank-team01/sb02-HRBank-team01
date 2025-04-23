@@ -5,7 +5,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
-public record DepartmentCreateRequest(
+public record DepartmentUpdateRequest(
     @NotBlank(message = "부서명은 필수입니다.")
     @Size(max = 30, message = "부서명은 30자를 초과할 수 없습니다.")
     String name,
