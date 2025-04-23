@@ -3,7 +3,7 @@ package com.team01.hrbank.service.impl;
 import com.team01.hrbank.dto.department.DepartmentCreateRequest;
 import com.team01.hrbank.dto.department.DepartmentDto;
 import com.team01.hrbank.entity.Department;
-import com.team01.hrbank.exception.DuplicateDepartmentNameException;
+import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.service.DepartmentService;
@@ -22,7 +22,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentDto createDepartment(DepartmentCreateRequest request) {
 
         if (departmentRepository.existsByName(request.name())) {
-            throw new DuplicateDepartmentNameException(request.name());
+            throw new DuplicateException(request.name());
         }
 
         Department department = new Department(
