@@ -107,7 +107,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public EmployeeDto findById(Long id) {
-        Employee employee = employeeRepository.findById(id)
+        Employee employee = employeeRepository.findWithDetailsById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
         return employeeMapper.toDto(employee);
     }
