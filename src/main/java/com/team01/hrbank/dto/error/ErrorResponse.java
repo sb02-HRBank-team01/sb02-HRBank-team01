@@ -1,4 +1,4 @@
-package com.team01.hrbank.exception;
+package com.team01.hrbank.dto.error;
 
 import java.time.Instant;
 

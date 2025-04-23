@@ -1,4 +1,4 @@
-package com.team01.hrbank.service;
+package com.team01.hrbank.service.impl;
 
 import com.team01.hrbank.dto.department.DepartmentCreateRequest;
 import com.team01.hrbank.dto.department.DepartmentDto;
@@ -6,6 +6,7 @@ import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.exception.DuplicateDepartmentNameException;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
+import com.team01.hrbank.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentDto createDepartment(DepartmentCreateRequest request) {
 
         if (departmentRepository.existsByName(request.name())) {
-            throw new DuplicateDepartmentNameException("이미 존재하는 부서명입니다.");
+            throw new DuplicateDepartmentNameException(request.name());
         }
 
         Department department = new Department(
