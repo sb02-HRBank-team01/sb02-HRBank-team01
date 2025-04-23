@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,7 +39,7 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<CursorPageResponseEmployeeDto<EmployeeDto>> getEmployees(
+    public ResponseEntity<CursorPageResponseEmployeeDto<EmployeeDto>> findAll(
         @RequestParam(required = false) String nameOrEmail,
         @RequestParam(required = false) String employeeNumber,
         @RequestParam(required = false) String departmentName,
@@ -58,5 +59,13 @@ public class EmployeeController {
             cursor, idAfter, size, sortField, sortDirection
         );
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDto> findById(
+        @PathVariable Long id
+    ) {
+        EmployeeDto employeeDto = employeeService.findById(id);
+        return ResponseEntity.ok(employeeDto);
     }
 }
