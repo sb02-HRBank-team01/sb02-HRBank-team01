@@ -1,11 +1,10 @@
-package com.team01.hrbank.service.binarycontent;
+package com.team01.hrbank.service;
 
 import com.team01.hrbank.dto.binarycontent.BinaryContentCreateRequest;
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.UUID;
 
 public interface BinaryContentService {
 

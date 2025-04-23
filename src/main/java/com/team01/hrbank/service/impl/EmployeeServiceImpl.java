@@ -1,4 +1,4 @@
-package com.team01.hrbank.service;
+package com.team01.hrbank.service.impl;
 
 import com.team01.hrbank.constraint.EmployeeStatus;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
@@ -6,6 +6,7 @@ import com.team01.hrbank.dto.employee.EmployeeDto;
 import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.mapper.EmployeeMapper;
 import com.team01.hrbank.repository.EmployeeRepository;
+import com.team01.hrbank.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

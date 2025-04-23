@@ -1,13 +1,14 @@
-package com.team01.hrbank.service.binarycontent;
+package com.team01.hrbank.service.impl;
 
 
 import com.team01.hrbank.dto.binarycontent.BinaryContentCreateRequest;
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import com.team01.hrbank.entity.BinaryContent;
 
-import com.team01.hrbank.mapper.binarycontent.BinaryContentMapper;
+import com.team01.hrbank.mapper.BinaryContentMapper;
 import com.team01.hrbank.repository.BinaryContentRepository;
-import com.team01.hrbank.repository.BinaryContentStorage;
+import com.team01.hrbank.storage.BinaryContentStorage;
+import com.team01.hrbank.service.BinaryContentService;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

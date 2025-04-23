@@ -1,5 +1,7 @@
-package com.team01.hrbank.exception;
+package com.team01.hrbank.controller.advice;
 
+import com.team01.hrbank.dto.error.ErrorResponse;
+import com.team01.hrbank.exception.DuplicateDepartmentNameException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
