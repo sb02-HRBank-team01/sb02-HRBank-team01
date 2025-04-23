@@ -29,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public EmployeeDto save(EmployeeCreateRequest employeeCreateRequest, MultipartFile profile) throws IOException {
-        if(!employeeRepository.existsByEmail((employeeCreateRequest.email()))) {
+        if(employeeRepository.existsByEmail((employeeCreateRequest.email()))) {
             throw new DuplicateException(employeeCreateRequest.email());
         }
 
