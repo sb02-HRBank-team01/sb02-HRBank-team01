@@ -43,7 +43,19 @@ public class GlobalExceptionHandler {
             .body(error);
     }
 
-    // 400: 부서 등록 시 이미 존재하는 부서명이 있을 경우 발생하는 예외 처리
+    // 400: 비즈니스 로직 검증 실패 시 발생하는 예외 처리
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "잘못된 요청입니다.",
+            ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    // 400: 등록하는 것이 이미 존재할 경우 발생하는 예외 처리
     @ExceptionHandler(DuplicateException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateException ex) {
         ErrorResponse error = new ErrorResponse(
