@@ -112,6 +112,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toDto(employee);
     }
 
+    @Override
+    public void delete(Long id) {
+        employeeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+        employeeRepository.deleteById(id);
+    }
+
     private String getSortValue(Employee employee, String sortField) {
         return switch (sortField) {
             case "name" -> employee.getName();

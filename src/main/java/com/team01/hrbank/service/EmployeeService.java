@@ -16,4 +16,5 @@ public interface EmployeeService {
       int size, String sortField, String sortDirection
   );
   EmployeeDto findById(Long id);
+  void delete(Long id);
 }

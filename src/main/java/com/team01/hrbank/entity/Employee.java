@@ -50,7 +50,7 @@ public class Employee extends BaseUpdatableEntity {
     @Convert(converter = EmployeeStatusConverter.class)
     private EmployeeStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "profile_image_id")
     private BinaryContent profile;
 
