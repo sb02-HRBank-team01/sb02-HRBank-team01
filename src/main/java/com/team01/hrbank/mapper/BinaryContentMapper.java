@@ -1,4 +1,4 @@
-package com.team01.hrbank.mapper.binarycontent;
+package com.team01.hrbank.mapper;
 
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import com.team01.hrbank.entity.BinaryContent;
