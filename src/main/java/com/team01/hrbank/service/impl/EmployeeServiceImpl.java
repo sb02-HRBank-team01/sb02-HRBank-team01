@@ -20,7 +20,9 @@ import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -177,7 +179,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.deleteById(id);
     }
 
+    @Override
     public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+
+        if (to == null) {
+            to = LocalDate.now();
+        }
+        if (from == null) {
+            from = calculateDefaultFrom(to, unit);
+        }
 
         List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to, unit);
 
@@ -185,8 +195,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Long previousCount = null;
 
         for (Object[] row : rawResult) {
-            LocalDate date = ((Timestamp) row[0]).toLocalDateTime().toLocalDate();
-            Long count = ((BigInteger) row[1]).longValue();
+            LocalDate date = ((Instant) row[0]).atZone(ZoneId.systemDefault()).toLocalDate();
+            Long count = ((Number) row[1]).longValue();
 
             Long change = (previousCount == null) ? null : count - previousCount;
             Double changeRate = (previousCount == null || previousCount == 0)
@@ -197,6 +207,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         return trendList;
+    }
+
+    private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
+        return switch (unit.toLowerCase()) {
+            case "day" -> to.minusDays(12);
+            case "week" -> to.minusWeeks(12);
+            case "quarter" -> to.minusMonths(36); // 12 quarters
+            case "year" -> to.minusYears(12);
+            default -> to.minusMonths(12);
+        };
     }
 
     private String getSortValue(Employee employee, String sortField) {
