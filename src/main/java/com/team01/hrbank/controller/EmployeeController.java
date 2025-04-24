@@ -30,17 +30,6 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    @PostMapping(
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<EmployeeDto> save(
-        @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
-        @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) throws IOException {
-        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
-        return ResponseEntity.ok(employeeDto);
-    }
-
     @GetMapping
     public ResponseEntity<CursorPageResponseEmployeeDto<EmployeeDto>> findAll(
         @RequestParam(required = false) String nameOrEmail,
@@ -64,12 +53,31 @@ public class EmployeeController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping(
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<EmployeeDto> save(
+        @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) throws IOException {
+        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
+        return ResponseEntity.ok(employeeDto);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> findById(
         @PathVariable Long id
     ) {
         EmployeeDto employeeDto = employeeService.findById(id);
         return ResponseEntity.ok(employeeDto);
+    }
+
+    @DeleteMapping("{id}")
+    public  ResponseEntity<EmployeeDto> delete(
+        @PathVariable Long id
+    ) {
+        employeeService.delete(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping(
@@ -83,13 +91,5 @@ public class EmployeeController {
     ) throws IOException {
         EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
         return ResponseEntity.ok(employeeDto);
-    }
-
-    @DeleteMapping("{id}")
-    public  ResponseEntity<EmployeeDto> delete(
-        @PathVariable Long id
-    ) {
-        employeeService.delete(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
