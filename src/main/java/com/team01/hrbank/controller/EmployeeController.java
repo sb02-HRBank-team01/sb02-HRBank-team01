@@ -2,10 +2,12 @@ package com.team01.hrbank.controller;
 
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
+import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.service.EmployeeService;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -59,7 +61,7 @@ public class EmployeeController {
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<EmployeeDto> save(
-        @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
+        @Valid @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) throws IOException {
         EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
@@ -88,7 +90,7 @@ public class EmployeeController {
     )
     public ResponseEntity<EmployeeDto> update(
         @PathVariable Long id,
-        @RequestPart("employee") EmployeeUpdateRequest updateRequest,
+        @Valid @RequestPart("employee") EmployeeUpdateRequest updateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) throws IOException {
         EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
@@ -102,5 +104,13 @@ public class EmployeeController {
         @RequestParam(defaultValue = "month") String unit
     ) {
         return ResponseEntity.ok(employeeService.getEmployeeTrend(from, to, unit));
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity<List<EmployeeDistributionDto>> getEmployeeDistribution(
+        @RequestParam(defaultValue = "department") String groupBy,
+        @RequestParam(defaultValue = "ACTIVE") String status
+    ) {
+        return ResponseEntity.ok(employeeService.getEmployeeDistribution(groupBy, status));
     }
 }
