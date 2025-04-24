@@ -1,5 +1,6 @@
 package com.team01.hrbank.constraint;
 
+import java.util.Arrays;
 import lombok.Getter;
 @Getter
 public enum EmployeeStatus {
@@ -11,6 +12,13 @@ public enum EmployeeStatus {
 
   EmployeeStatus(String description) {
     this.description = description;
+  }
+
+  public static EmployeeStatus from(String description) {
+    return Arrays.stream(EmployeeStatus.values())
+        .filter(status -> status.getDescription().equals(description))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("상태를 찾을 수 없습니다: " + description));
   }
 
   @Override

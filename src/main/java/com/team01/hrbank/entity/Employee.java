@@ -65,6 +65,16 @@ public class Employee extends BaseUpdatableEntity {
         this.profile = profile;
     }
 
+    public void update(String name, String email, Department department, String position, LocalDate hireDate, EmployeeStatus status, BinaryContent profile) {
+        this.name = name;
+        this.email = email;
+        this.department = department;
+        this.position = position;
+        this.hireDate = hireDate;
+        this.status = status;
+        this.profile = profile;
+    }
+
     @PrePersist
     private void assignEmployeeNumber() {
         if (this.employeeNumber == null) {
