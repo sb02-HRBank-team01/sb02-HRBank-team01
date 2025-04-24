@@ -1,5 +1,6 @@
 package com.team01.hrbank.service.impl;
 
+import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
@@ -15,6 +16,7 @@ import com.team01.hrbank.mapper.EmployeeMapper;
 import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
+import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
@@ -43,6 +45,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentRepository binaryContentRepository;
+    private final EmployeeQueryRepository employeeQueryRepository;
 
     private static final String EMPLOYEE = "직원";
     private static final String DEPARTMENT = "부서";
@@ -208,6 +211,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return trendList;
     }
+
+    @Override
+    public List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String statusDescription) {
+        EmployeeStatus status = EmployeeStatus.from(statusDescription); // 한글 → enum 변환
+
+        // 기본값 처리
+        String groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
+
+        return employeeQueryRepository.findDistributionBy(groupingKey, status);
+    }
+
 
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
         return switch (unit.toLowerCase()) {

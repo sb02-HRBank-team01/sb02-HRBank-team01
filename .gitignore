@@ -13,6 +13,7 @@ images/
 !**/src/test/**/build/
 README.md
 src/main/resources
+src/main/generated
 
 
 ### STS ###
