@@ -1,10 +1,8 @@
 package com.team01.hrbank.entity;
 
-import com.team01.hrbank.constraint.EmployeeStatus;
-import com.team01.hrbank.converter.EmployeeStatusConverter;
+import com.team01.hrbank.enums.EmployeeStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
