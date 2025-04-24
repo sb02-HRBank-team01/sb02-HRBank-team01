@@ -17,6 +17,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     long countByDepartmentId(Long departmentId);
 
+    boolean existsByEmailAndIdNot(String email, Long id);
+
     @Query("SELECT e FROM Employee e " +
         "LEFT JOIN FETCH e.department " +
         "LEFT JOIN FETCH e.profile " +

@@ -19,6 +19,8 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Table(name = "employees")
 @Entity
@@ -46,8 +48,9 @@ public class Employee extends BaseUpdatableEntity {
     @Column(nullable = false)
     private LocalDate hireDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Convert(converter = EmployeeStatusConverter.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private EmployeeStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
