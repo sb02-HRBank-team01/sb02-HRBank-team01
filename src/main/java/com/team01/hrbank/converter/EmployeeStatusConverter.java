@@ -5,18 +5,15 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Arrays;
 
-@Converter(autoApply = true)
+@Converter(autoApply = false)
 public class EmployeeStatusConverter implements AttributeConverter<EmployeeStatus, String> {
   @Override
   public String convertToDatabaseColumn(EmployeeStatus status) {
-    return status.getDescription(); // 한글 저장
+    return status.getDescription();
   }
 
   @Override
   public EmployeeStatus convertToEntityAttribute(String dbData) {
-    return Arrays.stream(EmployeeStatus.values())
-        .filter(e -> e.getDescription().equals(dbData))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Unknown status: " + dbData));
+    return EmployeeStatus.from(dbData);
   }
 }

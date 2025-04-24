@@ -11,6 +11,7 @@ import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.EmployeeMapper;
+import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.EmployeeService;
@@ -35,6 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
     private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentRepository binaryContentRepository;
 
     private static final String EMPLOYEE = "직원";
     private static final String DEPARTMENT = "부서";
@@ -56,6 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            binaryContent = binaryContentRepository.save(binaryContent);
         }
 
         Employee employee = new Employee(
@@ -126,6 +129,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findWithDetailsById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
 
+        if (employeeRepository.existsByEmailAndIdNot(updateRequest.email(), employee.getId())) {
+            throw new DuplicateException(updateRequest.email());
+        }
+
         Department department = departmentRepository.findById(updateRequest.departmentId())
             .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, updateRequest.departmentId()));
 
@@ -136,6 +143,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            binaryContent = binaryContentRepository.save(binaryContent);
         }
 
         employee.update(
@@ -151,6 +159,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         if (binaryContent != null) {
+            System.out.println("binary" + binaryContent.getId());
             binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
         }
 

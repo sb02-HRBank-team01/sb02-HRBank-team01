@@ -3,6 +3,7 @@ package com.team01.hrbank.controller;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.service.EmployeeService;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +31,6 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @PostMapping(
-        name = "",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<EmployeeDto> save(
@@ -68,6 +69,19 @@ public class EmployeeController {
         @PathVariable Long id
     ) {
         EmployeeDto employeeDto = employeeService.findById(id);
+        return ResponseEntity.ok(employeeDto);
+    }
+
+    @PatchMapping(
+        path = "/{id}",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<EmployeeDto> update(
+        @PathVariable Long id,
+        @RequestPart("employee") EmployeeUpdateRequest updateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) throws IOException {
+        EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
         return ResponseEntity.ok(employeeDto);
     }
 
