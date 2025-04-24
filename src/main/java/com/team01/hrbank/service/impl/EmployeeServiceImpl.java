@@ -10,6 +10,7 @@ import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
+import com.team01.hrbank.enums.TimeUnit;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.EmployeeMapper;
@@ -184,6 +185,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+        TimeUnit timeUnit = TimeUnit.from(unit);
 
         if (to == null) {
             to = LocalDate.now();
@@ -192,7 +194,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             from = calculateDefaultFrom(to, unit);
         }
 
-        List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to, unit);
+        List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to,
+            timeUnit.name().toLowerCase());
 
         List<EmployeeTrendDto> trendList = new ArrayList<>();
         Long previousCount = null;
@@ -213,13 +216,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String statusDescription) {
-        EmployeeStatus status = EmployeeStatus.from(statusDescription); // 한글 → enum 변환
+    public List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String status) {
+        EmployeeStatus employeeStatus;
+        String groupingKey;
 
-        // 기본값 처리
-        String groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
+        try {
+            employeeStatus = EmployeeStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("유효하지 않은 상태 값입니다: " + status);
+        }
 
-        return employeeQueryRepository.findDistributionBy(groupingKey, status);
+        if (groupBy == null || (!groupBy.equalsIgnoreCase("department") && !groupBy.equalsIgnoreCase("position"))) {
+            throw new IllegalStateException("유효하지 않은 그룹 기준입니다: " + groupBy);
+        }
+
+        groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
+
+        return employeeQueryRepository.findDistributionBy(groupingKey, employeeStatus);
     }
 
 
