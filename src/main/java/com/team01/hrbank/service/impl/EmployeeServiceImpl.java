@@ -177,6 +177,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         employeeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
@@ -184,6 +185,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
         TimeUnit timeUnit = TimeUnit.from(unit);
 
@@ -216,6 +218,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String status) {
         EmployeeStatus employeeStatus;
         String groupingKey;
@@ -233,6 +236,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
 
         return employeeQueryRepository.findDistributionBy(groupingKey, employeeStatus);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long employeeCount(String status, LocalDate fromDate, LocalDate toDate) {
+        EmployeeStatus employeeStatus;
+
+        try {
+            employeeStatus = EmployeeStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("유효하지 않은 상태 값입니다: " + status);
+        }
+
+        return employeeQueryRepository.employeeCountBy(employeeStatus, fromDate, toDate);
     }
 
 
