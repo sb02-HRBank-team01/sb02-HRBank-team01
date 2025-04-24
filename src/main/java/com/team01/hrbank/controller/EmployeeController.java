@@ -3,10 +3,12 @@ package com.team01.hrbank.controller;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.service.EmployeeService;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -91,5 +93,14 @@ public class EmployeeController {
     ) throws IOException {
         EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
         return ResponseEntity.ok(employeeDto);
+    }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity<List<EmployeeTrendDto>> getEmployeeTrend(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(defaultValue = "month") String unit
+    ) {
+        return ResponseEntity.ok(employeeService.getEmployeeTrend(from, to, unit));
     }
 }
