@@ -2,10 +2,13 @@ package com.team01.hrbank.service;
 
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
+import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface EmployeeService {
@@ -17,6 +20,8 @@ public interface EmployeeService {
       int size, String sortField, String sortDirection
   );
   EmployeeDto findById(Long id);
+  List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit);
+  List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String status);
   EmployeeDto update(EmployeeUpdateRequest updateRequest, Long id, MultipartFile profile) throws IOException;
   void delete(Long id);
 }

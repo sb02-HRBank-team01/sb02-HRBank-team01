@@ -3,9 +3,12 @@ package com.team01.hrbank.controller;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
+import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.service.EmployeeService;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,18 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
-
-    @PostMapping(
-        name = "",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<EmployeeDto> save(
-        @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
-        @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) throws IOException {
-        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
-        return ResponseEntity.ok(employeeDto);
-    }
 
     @GetMapping
     public ResponseEntity<CursorPageResponseEmployeeDto<EmployeeDto>> findAll(
@@ -63,6 +55,17 @@ public class EmployeeController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping(
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<EmployeeDto> save(
+        @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) throws IOException {
+        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
+        return ResponseEntity.ok(employeeDto);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> findById(
         @PathVariable Long id
@@ -77,5 +80,27 @@ public class EmployeeController {
     ) {
         employeeService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping(
+        path = "/{id}",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<EmployeeDto> update(
+        @PathVariable Long id,
+        @RequestPart("employee") EmployeeUpdateRequest updateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) throws IOException {
+        EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
+        return ResponseEntity.ok(employeeDto);
+    }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity<List<EmployeeTrendDto>> getEmployeeTrend(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(defaultValue = "month") String unit
+    ) {
+        return ResponseEntity.ok(employeeService.getEmployeeTrend(from, to, unit));
     }
 }

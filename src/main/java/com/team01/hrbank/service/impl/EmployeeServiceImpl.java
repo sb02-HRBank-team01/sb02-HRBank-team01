@@ -1,6 +1,8 @@
 package com.team01.hrbank.service.impl;
 
-import com.team01.hrbank.constraint.EmployeeStatus;
+import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
+import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
@@ -11,12 +13,19 @@ import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.EmployeeMapper;
+import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
+import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +44,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
     private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentRepository binaryContentRepository;
+    private final EmployeeQueryRepository employeeQueryRepository;
 
     private static final String EMPLOYEE = "직원";
     private static final String DEPARTMENT = "부서";
@@ -56,6 +67,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            binaryContent = binaryContentRepository.save(binaryContent);
         }
 
         Employee employee = new Employee(
@@ -126,6 +138,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findWithDetailsById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
 
+        if (employeeRepository.existsByEmailAndIdNot(updateRequest.email(), employee.getId())) {
+            throw new DuplicateException(updateRequest.email());
+        }
+
         Department department = departmentRepository.findById(updateRequest.departmentId())
             .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, updateRequest.departmentId()));
 
@@ -136,6 +152,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            binaryContent = binaryContentRepository.save(binaryContent);
         }
 
         employee.update(
@@ -151,6 +168,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         if (binaryContent != null) {
+            System.out.println("binary" + binaryContent.getId());
             binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
         }
 
@@ -162,6 +180,57 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
         employeeRepository.deleteById(id);
+    }
+
+    @Override
+    public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+
+        if (to == null) {
+            to = LocalDate.now();
+        }
+        if (from == null) {
+            from = calculateDefaultFrom(to, unit);
+        }
+
+        List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to, unit);
+
+        List<EmployeeTrendDto> trendList = new ArrayList<>();
+        Long previousCount = null;
+
+        for (Object[] row : rawResult) {
+            LocalDate date = ((Instant) row[0]).atZone(ZoneId.systemDefault()).toLocalDate();
+            Long count = ((Number) row[1]).longValue();
+
+            Long change = (previousCount == null) ? null : count - previousCount;
+            Double changeRate = (previousCount == null || previousCount == 0)
+                ? null : (change * 100.0) / previousCount;
+
+            trendList.add(new EmployeeTrendDto(date, count, change, changeRate));
+            previousCount = count;
+        }
+
+        return trendList;
+    }
+
+    @Override
+    public List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String statusDescription) {
+        EmployeeStatus status = EmployeeStatus.from(statusDescription); // 한글 → enum 변환
+
+        // 기본값 처리
+        String groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
+
+        return employeeQueryRepository.findDistributionBy(groupingKey, status);
+    }
+
+
+    private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
+        return switch (unit.toLowerCase()) {
+            case "day" -> to.minusDays(12);
+            case "week" -> to.minusWeeks(12);
+            case "quarter" -> to.minusMonths(36); // 12 quarters
+            case "year" -> to.minusYears(12);
+            default -> to.minusMonths(12);
+        };
     }
 
     private String getSortValue(Employee employee, String sortField) {

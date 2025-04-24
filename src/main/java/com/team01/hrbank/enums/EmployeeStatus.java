@@ -1,4 +1,4 @@
-package com.team01.hrbank.constraint;
+package com.team01.hrbank.enums;
 
 import java.util.Arrays;
 import lombok.Getter;

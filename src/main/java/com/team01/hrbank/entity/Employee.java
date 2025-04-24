@@ -1,10 +1,8 @@
 package com.team01.hrbank.entity;
 
-import com.team01.hrbank.constraint.EmployeeStatus;
-import com.team01.hrbank.converter.EmployeeStatusConverter;
+import com.team01.hrbank.enums.EmployeeStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,6 +17,8 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Table(name = "employees")
 @Entity
@@ -46,8 +46,9 @@ public class Employee extends BaseUpdatableEntity {
     @Column(nullable = false)
     private LocalDate hireDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Convert(converter = EmployeeStatusConverter.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private EmployeeStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
