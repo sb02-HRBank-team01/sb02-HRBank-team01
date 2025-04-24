@@ -1,9 +1,8 @@
 package com.team01.hrbank.converter;
 
-import com.team01.hrbank.constraint.EmployeeStatus;
+import com.team01.hrbank.enums.EmployeeStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import java.util.Arrays;
 
 @Converter(autoApply = false)
 public class EmployeeStatusConverter implements AttributeConverter<EmployeeStatus, String> {

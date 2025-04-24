@@ -1,6 +1,7 @@
 package com.team01.hrbank.service.impl;
 
-import com.team01.hrbank.constraint.EmployeeStatus;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
+import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
@@ -17,7 +18,10 @@ import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -171,6 +175,28 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
         employeeRepository.deleteById(id);
+    }
+
+    public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+
+        List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to, unit);
+
+        List<EmployeeTrendDto> trendList = new ArrayList<>();
+        Long previousCount = null;
+
+        for (Object[] row : rawResult) {
+            LocalDate date = ((Timestamp) row[0]).toLocalDateTime().toLocalDate();
+            Long count = ((BigInteger) row[1]).longValue();
+
+            Long change = (previousCount == null) ? null : count - previousCount;
+            Double changeRate = (previousCount == null || previousCount == 0)
+                ? null : (change * 100.0) / previousCount;
+
+            trendList.add(new EmployeeTrendDto(date, count, change, changeRate));
+            previousCount = count;
+        }
+
+        return trendList;
     }
 
     private String getSortValue(Employee employee, String sortField) {

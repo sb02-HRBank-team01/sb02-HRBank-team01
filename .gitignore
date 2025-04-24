@@ -6,6 +6,7 @@ application.yml
 .idea/
 build/
 uploads/
+images/
 *.log
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
