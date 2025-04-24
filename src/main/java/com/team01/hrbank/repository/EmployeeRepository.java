@@ -50,8 +50,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query(value = """
         SELECT DATE_TRUNC(:unit, e.hire_date) AS date, COUNT(*) AS count
         FROM employees e
-        WHERE e.status != 'RESIGNED'
-          AND e.hire_date BETWEEN :from AND :to
+        WHERE e.hire_date BETWEEN :from AND :to
         GROUP BY date
         ORDER BY date
     """, nativeQuery = true)
