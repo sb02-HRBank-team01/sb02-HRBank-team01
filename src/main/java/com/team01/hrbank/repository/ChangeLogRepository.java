@@ -4,6 +4,8 @@ import com.team01.hrbank.entity.ChangeLog;
 import com.team01.hrbank.enums.ChangeType;
 import java.time.Instant;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,16 +49,27 @@ public interface ChangeLogRepository extends JpaRepository<ChangeLog, Long> {
             CASE WHEN :sortField = 'at' AND :sortDirection = 'asc' THEN c.updatedAt END ASC,
             CASE WHEN :sortField = 'at' AND :sortDirection = 'desc' THEN c.updatedAt END DESC
      */
+
+    /*
+    List -> Slice
+    다음 페이지 유무, 현재 페이지 정보 포함 (hasNext, size 등)
+    자동 정렬 제공
+    수동으로 idAfter로 필터링할 필요없이 Pageable을 통해 size, page 번호를 처리할 수 있다.
+    무한 스크롤을 위해서도 필요함
+    */
+//    Slice<ChangeLog> findByConditionsByCursor(
+//        @Param("employeeNumber") String employeeNumber,
+//        @Param("type") ChangeType type,
+//        @Param("memo") String memo,
+//        @Param("ipAddress") String ipAddress,
+//        @Param("atFrom") Instant atFrom,
+//        @Param("atTo") Instant atTo,
+//        @Param("idAfter") Long idAfter,
+//        Pageable pageable
+//    );
     List<ChangeLog> findByConditions(
-        @Param("employeeNumber") String employeeNumber,
-        @Param("type") ChangeType type,
-        @Param("memo") String memo,
-        @Param("ipAddress") String ipAddress,
-        @Param("atFrom") Instant atFrom,
-        @Param("atTo") Instant atTo,
-        @Param("idAfter") Long idAfter,
-        @Param("sortField") String sortField,
-        @Param("sortDirection") String sortDirection
+        String employeeNumber, ChangeType type, String memo,
+        String ipAddress, Instant atFrom, Instant atTo
     );
 }
 
