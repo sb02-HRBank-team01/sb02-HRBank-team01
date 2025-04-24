@@ -8,6 +8,8 @@ public interface DepartmentService {
 
     DepartmentDto createDepartment(DepartmentCreateRequest request);
 
+    DepartmentDto getDepartment(Long departmentId);
+
     DepartmentDto updateDepartment(Long departmentId, DepartmentUpdateRequest request);
 
     void deleteDepartment(Long departmentId);
