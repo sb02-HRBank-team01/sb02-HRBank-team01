@@ -37,9 +37,20 @@ public class DepartmentServiceImpl implements DepartmentService {
             request.establishedDate()
         );
         Department savedDepartment = departmentRepository.save(department);
+        Long employeeCount = employeeRepository.countByDepartmentId(savedDepartment.getId());
 
-        // 나중에 0L 부분을 실제 직원을 조회한 값으로 바꿔야 합니다. + 조회 로직까지 추가
-        return departmentMapper.toDto(savedDepartment, 0L);
+        return departmentMapper.toDto(savedDepartment, employeeCount);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DepartmentDto getDepartment(Long departmentId) {
+        Department department = departmentRepository.findById(departmentId)
+            .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, departmentId));
+
+        Long employeeCount = employeeRepository.countByDepartmentId(departmentId);
+
+        return departmentMapper.toDto(department, employeeCount);
     }
 
     @Override
@@ -53,8 +64,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         department.update(request.name(), request.description(), request.establishedDate());
+        Long employeeCount = employeeRepository.countByDepartmentId(departmentId);
 
-        return departmentMapper.toDto(department, 0L);
+        return departmentMapper.toDto(department, employeeCount);
     }
 
     @Override
