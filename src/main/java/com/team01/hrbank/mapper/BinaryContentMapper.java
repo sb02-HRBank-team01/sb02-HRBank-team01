@@ -3,8 +3,9 @@ package com.team01.hrbank.mapper;
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import com.team01.hrbank.entity.BinaryContent;
 import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
-@Mapper
+@Component
 public class BinaryContentMapper {
 
     public BinaryContentDto toDto(BinaryContent binaryContent) {

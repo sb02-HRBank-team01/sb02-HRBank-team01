@@ -1,5 +1,7 @@
 package com.team01.hrbank.dto.binarycontent;
 
-public record BinaryContentDto(Long id) {
+import jakarta.validation.constraints.NotNull;
 
-}
+public record BinaryContentDto(
+    Long id
+){}

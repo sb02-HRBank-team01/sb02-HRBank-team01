@@ -1,9 +1,13 @@
 package com.team01.hrbank.entity;
 
 import com.team01.hrbank.constraint.EmployeeStatus;
+import com.team01.hrbank.converter.EmployeeStatusConverter;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,7 +33,7 @@ public class Employee extends BaseUpdatableEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true, updatable = false)
+    @Column(name = "emp_number", nullable = false, unique = true, updatable = false)
     private String employeeNumber = UUID.randomUUID().toString();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,9 +47,10 @@ public class Employee extends BaseUpdatableEntity {
     private LocalDate hireDate;
 
     @Column(nullable = false)
+    @Convert(converter = EmployeeStatusConverter.class)
     private EmployeeStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "profile_image_id")
     private BinaryContent profile;
 
