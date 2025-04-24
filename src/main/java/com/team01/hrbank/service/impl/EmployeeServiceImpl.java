@@ -4,6 +4,7 @@ import com.team01.hrbank.constraint.EmployeeStatus;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
@@ -13,10 +14,10 @@ import com.team01.hrbank.mapper.EmployeeMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.EmployeeService;
+import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,10 +34,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
+    private final BinaryContentStorage binaryContentStorage;
 
     private static final String EMPLOYEE = "직원";
     private static final String DEPARTMENT = "부서";
-
 
     @Override
     @Transactional
@@ -67,7 +68,13 @@ public class EmployeeServiceImpl implements EmployeeService {
             binaryContent
         );
 
-        return employeeMapper.toDto(employeeRepository.save(employee));
+        employeeRepository.save(employee);
+
+        if (binaryContent != null) {
+            binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
+        }
+
+        return employeeMapper.toDto(employee);
     }
 
     @Override
@@ -109,6 +116,44 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto findById(Long id) {
         Employee employee = employeeRepository.findWithDetailsById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+        return employeeMapper.toDto(employee);
+    }
+
+    @Override
+    @Transactional
+    public EmployeeDto update(EmployeeUpdateRequest updateRequest, Long id, MultipartFile profile) throws IOException {
+
+        Employee employee = employeeRepository.findWithDetailsById(id)
+            .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+
+        Department department = departmentRepository.findById(updateRequest.departmentId())
+            .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, updateRequest.departmentId()));
+
+        BinaryContent binaryContent = null;
+        if (profile != null && !profile.isEmpty()) {
+            binaryContent = new BinaryContent(
+                profile.getOriginalFilename(),
+                (long) profile.getBytes().length,
+                profile.getContentType()
+            );
+        }
+
+        employee.update(
+            updateRequest.name(),
+            updateRequest.email(),
+            department,
+            updateRequest.position(),
+            updateRequest.hireDate(),
+            EmployeeStatus.from(updateRequest.status()),
+            binaryContent
+        );
+
+        employeeRepository.save(employee);
+
+        if (binaryContent != null) {
+            binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
+        }
+
         return employeeMapper.toDto(employee);
     }
 

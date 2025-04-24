@@ -15,6 +15,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     boolean existsByDepartmentId(Long departmentId); // 단순히 존재 여부만 판단(조회X)
 
+    long countByDepartmentId(Long departmentId);
+
     @Query("SELECT e FROM Employee e " +
         "LEFT JOIN FETCH e.department " +
         "LEFT JOIN FETCH e.profile " +
