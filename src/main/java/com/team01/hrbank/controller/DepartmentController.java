@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,19 @@ public class DepartmentController {
         @Valid @RequestBody DepartmentCreateRequest request) {
 
         DepartmentDto response = departmentService.createDepartment(request);
-        return ResponseEntity.ok(response); // 200 OK 응답
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DepartmentDto> getDepartment(@PathVariable Long id) {
+        DepartmentDto response = departmentService.getDepartment(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
+        departmentService.deleteDepartment(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
@@ -37,12 +50,6 @@ public class DepartmentController {
 
         DepartmentDto response = departmentService.updateDepartment(id, request);
         return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
-        departmentService.deleteDepartment(id);
-        return ResponseEntity.noContent().build();
     }
 
 }
