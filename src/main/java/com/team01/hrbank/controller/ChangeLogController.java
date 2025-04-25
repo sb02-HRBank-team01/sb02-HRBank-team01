@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -56,5 +57,25 @@ public class ChangeLogController {
     @Operation(summary = "직원 이력 상세 변경 내용 조회")
     public List<DiffDto> findChangeDetails(@PathVariable Long id){
         return changeLogService.findChangeDetails(id);
+    }
+
+    @GetMapping("/count")
+    @Operation(summary = "직원 정보 수정 이력 건수 조회")
+    public Long countChangeLogs(
+        @RequestParam(required = false) String employeeNumber,
+        @RequestParam(required = false) ChangeType type,
+        @RequestParam(required = false) String memo,
+        @RequestParam(required = false) String ipAddress,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atFrom,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atTo
+    ){
+        return changeLogService.countChangeLogs(
+            employeeNumber,
+            type,
+            memo,
+            ipAddress,
+            atFrom,
+            atTo
+        );
     }
 }

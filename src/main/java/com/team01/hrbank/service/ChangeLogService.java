@@ -43,4 +43,14 @@ public interface ChangeLogService {
 
     // 상세 변경 내역 조회
     List<DiffDto> findChangeDetails(Long changeLogId);
+
+    // 수정 이력 건수 조회
+    long countChangeLogs(
+        String employeeNumber,
+        ChangeType type,
+        String memo,
+        String ipAddress,
+        Instant atFrom,
+        Instant atTo
+    );
 }

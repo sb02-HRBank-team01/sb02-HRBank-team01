@@ -4,7 +4,9 @@ import com.team01.hrbank.entity.ChangeLog;
 import com.team01.hrbank.enums.ChangeType;
 import java.time.Instant;
 import java.util.List;
+import org.springframework.data.repository.NoRepositoryBean;
 
+@NoRepositoryBean
 public interface ChangeLogQueryRepository {
     List<ChangeLog> findByConditions(
         String employeeNumber,
