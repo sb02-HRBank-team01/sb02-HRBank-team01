@@ -9,6 +9,8 @@ import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -56,8 +58,10 @@ public class EmployeeQueryRepositoryImpl implements EmployeeQueryRepository {
             .from(employee)
             .where(
                 employee.status.eq(status),
-                employee.createdAt.goe(Instant.from(fromDate)),
-                employee.createdAt.loe(Instant.from(toDate))
+//                employee.createdAt.goe(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+//                employee.createdAt.loe(toDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant())
+                fromDate != null ? employee.createdAt.goe(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null,
+                toDate != null ? employee.createdAt.loe(toDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant()) : null
             )
             .fetchOne();
     }

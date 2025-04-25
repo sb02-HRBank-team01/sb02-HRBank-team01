@@ -113,4 +113,13 @@ public class EmployeeController {
     ) {
         return ResponseEntity.ok(employeeService.getEmployeeDistribution(groupBy, status));
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> getEmployeeCount(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+        @RequestParam(defaultValue = "ACTIVE") String status
+    ) {
+        return ResponseEntity.ok(employeeService.employeeCount(status, fromDate, toDate));
+    }
 }
