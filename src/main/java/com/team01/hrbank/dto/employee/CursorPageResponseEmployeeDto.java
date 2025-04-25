@@ -8,7 +8,7 @@ public record CursorPageResponseEmployeeDto<T>(
     Long nextIdAfter,
     int size,
     long totalElements,
-    boolean hashNext
+    boolean hasNext
 ) {
 
 }

@@ -9,6 +9,7 @@ import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface EmployeeService {
