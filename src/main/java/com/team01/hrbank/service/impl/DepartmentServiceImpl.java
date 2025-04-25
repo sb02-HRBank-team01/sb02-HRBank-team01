@@ -1,5 +1,6 @@
 package com.team01.hrbank.service.impl;
 
+import com.team01.hrbank.dto.department.CursorPageResponseDepartmentDto;
 import com.team01.hrbank.dto.department.DepartmentCreateRequest;
 import com.team01.hrbank.dto.department.DepartmentDto;
 import com.team01.hrbank.dto.department.DepartmentUpdateRequest;
@@ -10,6 +11,8 @@ import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.DepartmentService;
+import com.team01.hrbank.util.CursorUtil;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +83,47 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         departmentRepository.delete(department);
+    }
 
+    @Override
+    public CursorPageResponseDepartmentDto getDepartments(String nameOrDescription, Long idAfter,
+        String cursor, int size, String sortField, String sortDirection) {
+
+        // 1. cursor 디코딩 -> idAfter로 변환
+        Long decodedIdAfter = (cursor != null && !cursor.isEmpty()) ? CursorUtil.decodeCursor(cursor) : idAfter;
+
+        // 2. Repository 호출 (size + 1로 hasNext 확인)
+        List<DepartmentDto> departmentList = departmentRepository.findDepartmentsWithConditions(
+            nameOrDescription, decodedIdAfter, sortField, sortDirection, size + 1
+        );
+
+        // 3. hasNext 판단
+        boolean hasNext = departmentList.size() > size;
+
+        // 4. 실제 반환할 리스트 자르기
+        List<DepartmentDto> content = hasNext
+            ? departmentList.subList(0, size)
+            : departmentList;
+
+        // 5. nextIdAfter 계산
+        Long nextIdAfter = hasNext && !content.isEmpty()
+            ? content.get(content.size() - 1).id()
+            : null;
+
+        // 6. nextCursor 인코딩
+        String nextCursor = CursorUtil.encodeCursor(nextIdAfter);
+
+        // 7. 전체 요소 수 계산
+        long totalElements = departmentRepository.count();
+
+        // 8. 응답 DTO 생성
+        return new CursorPageResponseDepartmentDto(
+            content,
+            nextCursor,
+            nextIdAfter,
+            size,
+            totalElements,
+            hasNext
+        );
     }
 }
