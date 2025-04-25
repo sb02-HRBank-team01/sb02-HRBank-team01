@@ -3,6 +3,7 @@ package com.team01.hrbank.controller.advice;
 import com.team01.hrbank.dto.error.ErrorResponse;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
+import com.team01.hrbank.exception.InvalidSortParameterException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,5 +79,16 @@ public class GlobalExceptionHandler {
             ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(InvalidSortParameterException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidSort(InvalidSortParameterException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "잘못된 요청입니다.",
+            ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
     }
 }
