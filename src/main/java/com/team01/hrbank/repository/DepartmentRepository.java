@@ -7,7 +7,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     boolean existsByName(String name);
 
-    // 수정 시, 자기 자신(ID)을 제외한 중복 체크
-    boolean existsByNameAndIdNot(String name, Long id);
+    boolean existsByNameAndIdNot(String name, Long id); // 수정 시, 자기 자신(ID)을 제외한 중복 체크
 
 }
