@@ -23,7 +23,7 @@ public class ChangeLogDetail extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String after;
 
-    public ChangeLogDetail(String propertyName, String before, String after) {
+    public ChangeLogDetail(ChangeLog changeLog, String propertyName, String before, String after) {
         this.propertyName = propertyName;
         this.before = before;
         this.after = after;

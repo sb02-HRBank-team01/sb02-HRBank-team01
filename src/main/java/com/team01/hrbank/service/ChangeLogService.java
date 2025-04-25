@@ -28,27 +28,19 @@ public interface ChangeLogService {
         String ipAddress
     );
 
-//    CursorPageResponseChangeLogDto findByConditionsByCursor(
-//        String employeeNumber,
-//        ChangeType type,
-//        String memo,
-//        String ipAddress,
-//        Instant atFrom,
-//        Instant atTo,
-//        Long idAfter,
-//        Pageable pageable
-//    );
-
-    // 커서 구현 전 사용할 메서드
-    List<ChangeLogDto> findByConditions(
+    CursorPageResponseChangeLogDto searchChangeLogs(
         String employeeNumber,
         ChangeType type,
         String memo,
         String ipAddress,
         Instant atFrom,
-        Instant atTo
+        Instant atTo,
+        Long idAfter,
+        String sortField,
+        String sortDirection,
+        int size
     );
 
-    // 상세 변경 내역 조회
-    List<DiffDto> findChangeDetails(Long changeLogId);
+//    // 상세 변경 내역 조회
+//    List<DiffDto> findChangeDetails(Long changeLogId);
 }

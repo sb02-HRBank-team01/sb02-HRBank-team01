@@ -1,45 +1,52 @@
-//package com.team01.hrbank.controller;
-//
-//import com.team01.hrbank.dto.changelog.ChangeLogDto;
-//import com.team01.hrbank.entity.ChangeLog;
-//import com.team01.hrbank.enums.ChangeType;
-//import com.team01.hrbank.mapper.ChangeLogMapper;
-//import com.team01.hrbank.repository.ChangeLogRepository;
-//import jakarta.transaction.Transactional;
-//import java.util.List;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//@RestController
-//@RequestMapping("/api/test/changelog")
-//@RequiredArgsConstructor
-//public class ChangeLogController {
-//
-//    private final ChangeLogRepository changeLogRepository;
-//    private final ChangeLogMapper changeLogMapper;
-//
-//    @PostMapping("/sample")
-//    public ResponseEntity<Void> saveSample() {
-//        ChangeLog log = new ChangeLog(
-//            ChangeType.CREATED,
-//            "EMP-2024-001",
-//            "Postman 테스트용",
-//            "127.0.0.1"
-//        );
-//        changeLogRepository.save(log);
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @GetMapping("/list")
-//    public ResponseEntity<List<ChangeLogDto>> list() {
-//        List<ChangeLog> logs = changeLogRepository.findAll();
-//        List<ChangeLogDto> result = logs.stream()
-//            .map(changeLogMapper::toDto)
-//            .toList();
-//        return ResponseEntity.ok(result);
-//    }
-//}
+package com.team01.hrbank.controller;
+
+
+import com.team01.hrbank.dto.changelog.CursorPageResponseChangeLogDto;
+import com.team01.hrbank.enums.ChangeType;
+import com.team01.hrbank.service.ChangeLogService;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/change-logs")
+public class ChangeLogController {
+
+    private final ChangeLogService changeLogService;
+
+    @GetMapping
+    @Operation(summary = "직원 정보 수정 이력 목록 조회")
+    public CursorPageResponseChangeLogDto searchChangeLogs(
+        // QueryString 방식
+        @RequestParam(required = false) String employeeNumber,
+        @RequestParam(required = false) ChangeType type,
+        @RequestParam(required = false) String memo,
+        @RequestParam(required = false) String ipAddress,
+        @RequestParam(required = false)
+        // ISO-8601형식 시간 쿼리 파싱 지원
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atFrom,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atTo,
+        @RequestParam(required = false) Long idAfter,
+        @RequestParam(defaultValue = "at") String sortField,
+        @RequestParam(defaultValue = "desc") String sortDirection,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return changeLogService.searchChangeLogs(
+            employeeNumber,
+            type,
+            memo,
+            ipAddress,
+            atFrom,
+            atTo,
+            idAfter,
+            sortField,
+            sortDirection,
+            size
+        );
+    }
+}
