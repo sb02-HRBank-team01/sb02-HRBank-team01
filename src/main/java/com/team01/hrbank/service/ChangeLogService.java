@@ -41,6 +41,6 @@ public interface ChangeLogService {
         int size
     );
 
-//    // 상세 변경 내역 조회
-//    List<DiffDto> findChangeDetails(Long changeLogId);
+    // 상세 변경 내역 조회
+    List<DiffDto> findChangeDetails(Long changeLogId);
 }

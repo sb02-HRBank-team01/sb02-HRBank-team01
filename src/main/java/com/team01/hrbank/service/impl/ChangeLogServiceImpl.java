@@ -10,13 +10,11 @@ import com.team01.hrbank.mapper.ChangeLogMapper;
 import com.team01.hrbank.repository.ChangeLogDetailRepository;
 import com.team01.hrbank.repository.ChangeLogRepository;
 import com.team01.hrbank.service.ChangeLogService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 // 직원의 정보가 변경되었을 때, 어떤 필드가 어떻게 바뀌었는지를 ChangeLog, ChangeLogDetail 테이블에 기록
@@ -93,5 +91,23 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             .toList();
 
         changeLogDetailRepository.saveAll(detailEntities);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    // 직원 정보 수정 이력 상세 조회
+    public List<DiffDto> findChangeDetails(Long changeLogId) {
+        // 해당 이력의 ChangeDetail 필드 목록 조회
+        List<ChangeLogDetail> details = changeLogDetailRepository.findAllByChangeLogId(changeLogId);
+
+        // Dto 변환 (changeLogDetail -> diffDto)
+        return details.stream()
+            .map(detail -> new DiffDto(
+                detail.getPropertyName(),
+                detail.getBefore(),
+                detail.getAfter()
+            ))
+            .toList();
     }
 }
