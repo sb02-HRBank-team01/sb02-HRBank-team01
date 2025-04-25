@@ -24,8 +24,7 @@ public class DepartmentRepositoryImpl implements DepartmentQueryRepository {
 
     @Override
     public List<DepartmentDto> findDepartmentsWithConditions(
-        String nameOrDescription, String sortField, String sortDirection,
-        Long idAfter, int size
+        String nameOrDescription, Long idAfter, String sortField, String sortDirection, int size
     ) {
 
         BooleanBuilder whereClause = new BooleanBuilder(); // 동적 where 조건 (처음에 비어있는 조건 생성)
