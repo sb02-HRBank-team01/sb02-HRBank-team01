@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class DepartmentQueryRepositoryImpl implements DepartmentQueryRepository {
+public class DepartmentRepositoryImpl implements DepartmentQueryRepository {
 
     private final JPAQueryFactory queryFactory;
     private final QDepartment department = QDepartment.department;

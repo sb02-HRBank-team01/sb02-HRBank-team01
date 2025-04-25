@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor // JPAQueryFactory 주입
-public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
+public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
 
     private final JPAQueryFactory queryFactory;
     private final ChangeLogMapper changeLogMapper;

@@ -110,4 +110,25 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             ))
             .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    //
+    public long countChangeLogs(
+        String employeeNumber,
+        ChangeType type,
+        String memo,
+        String ipAddress,
+        Instant atFrom,
+        Instant atTo
+    ){
+        return changeLogRepository.countByConditions(
+            employeeNumber,
+            type,
+            memo,
+            ipAddress,
+            atFrom,
+            atTo
+        );
+    }
 }
