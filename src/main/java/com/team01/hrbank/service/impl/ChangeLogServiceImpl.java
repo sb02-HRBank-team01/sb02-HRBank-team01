@@ -87,7 +87,12 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
         // DiffDto 리스트를 순회하면서 각각 ChangeLogDetail로 변환
         List<ChangeLogDetail> detailEntities = details.stream()
-            .map(diffDto -> new ChangeLogDetail(changeLog, diffDto.propertyName(), diffDto.before(), diffDto.after()))
+            .map(diffDto -> new ChangeLogDetail(
+                changeLog,
+                diffDto.propertyName(),
+                diffDto.before(),
+                diffDto.after()
+            ))
             .toList();
 
         changeLogDetailRepository.saveAll(detailEntities);
