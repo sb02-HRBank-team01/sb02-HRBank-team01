@@ -18,7 +18,7 @@ public enum EmployeeStatus {
     return Arrays.stream(EmployeeStatus.values())
         .filter(status -> status.getDescription().equals(description))
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("상태를 찾을 수 없습니다: " + description));
+        .orElseThrow(() -> new IllegalStateException("상태를 찾을 수 없습니다: " + description));
   }
 
   @Override

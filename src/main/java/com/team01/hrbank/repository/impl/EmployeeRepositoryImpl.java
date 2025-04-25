@@ -1,21 +1,33 @@
 package com.team01.hrbank.repository.impl;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTemplate;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.team01.hrbank.dto.employee.CursorPageRequestEmployeeDto;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.entity.QEmployee;
 import com.team01.hrbank.enums.EmployeeStatus;
+import com.team01.hrbank.enums.TimeUnit;
 import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -24,97 +36,54 @@ import org.springframework.stereotype.Repository;
 public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
 
     private final JPAQueryFactory queryFactory;
-    QEmployee employee = QEmployee.employee;
+    private final QEmployee employee = QEmployee.employee;
 
     @Override
     public CursorPageResponseEmployeeDto<EmployeeDto> findEmployeeByCursor(
-        String nameOrEmail,
-        String employeeNumber,
-        String departmentName,
-        String position,
-        LocalDate hireDateFrom,
-        LocalDate hireDateTo,
-        EmployeeStatus status,
-        Long idAfter,
-        String cursor,
-        Integer size,
-        String sortField,
-        String sortDirection
+        CursorPageRequestEmployeeDto request
     ) {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 필터 조건
-        if (nameOrEmail != null && !nameOrEmail.isBlank()) {
-            builder.and(employee.name.containsIgnoreCase(nameOrEmail)
-                .or(employee.email.containsIgnoreCase(nameOrEmail)));
+        if (request.nameOrEmail() != null && !request.nameOrEmail().isEmpty()) {
+            builder.and(employee.name.containsIgnoreCase(request.nameOrEmail())
+                .or(employee.email.containsIgnoreCase(request.nameOrEmail())));
         }
-        if (employeeNumber != null && !employeeNumber.isBlank()) {
-            builder.and(employee.employeeNumber.eq(employeeNumber));
+        if (request.employeeNumber() != null && !request.employeeNumber().isBlank()) {
+            builder.and(employee.employeeNumber.contains(request.employeeNumber()));
         }
-        if (departmentName != null && !departmentName.isBlank()) {
-            builder.and(employee.department.name.eq(departmentName));
+        if (request.departmentName() != null && !request.departmentName().isBlank()) {
+            builder.and(employee.department.name.contains(request.departmentName()));
         }
-        if (position != null && !position.isBlank()) {
-            builder.and(employee.position.eq(position));
+        if (request.position() != null && !request.position().isBlank()) {
+            builder.and(employee.position.contains(request.position()));
         }
-        if (hireDateFrom != null) {
-            builder.and(employee.hireDate.goe(hireDateFrom));
+        if (request.hireDateFrom() != null) {
+            builder.and(employee.hireDate.goe(request.hireDateFrom()));
         }
-        if (hireDateTo != null) {
-            builder.and(employee.hireDate.loe(hireDateTo));
+        if (request.hireDateTo() != null) {
+            builder.and(employee.hireDate.loe(request.hireDateTo()));
         }
-        if (status != null) {
-            builder.and(employee.status.eq(status));
+        if (request.status() != null) {
+            builder.and(employee.status.eq(request.status()));
         }
 
+        long total = Optional.ofNullable(
+            queryFactory.select(employee.count())
+                .from(employee)
+                .where(builder)
+                .fetchOne()
+        ).orElse(0L);
+
         // 커서 조건 (정렬 필드 + cursor + idAfter 기준)
-        if (cursor != null) {
-            switch (sortField) {
-                case "employeeNumber" -> {
-                    if ("desc".equalsIgnoreCase(sortDirection)) {
-                        builder.and(
-                            employee.employeeNumber.lt(cursor)
-                                .or(employee.employeeNumber.eq(cursor).and(employee.id.lt(idAfter)))
-                        );
-                    } else {
-                        builder.and(
-                            employee.employeeNumber.gt(cursor)
-                                .or(employee.employeeNumber.eq(cursor).and(employee.id.gt(idAfter)))
-                        );
-                    }
-                }
-                case "hireDate" -> {
-                    LocalDate hireCursor = LocalDate.parse(cursor);
-                    if ("desc".equalsIgnoreCase(sortDirection)) {
-                        builder.and(
-                            employee.hireDate.lt(hireCursor)
-                                .or(employee.hireDate.eq(hireCursor).and(employee.id.lt(idAfter)))
-                        );
-                    } else {
-                        builder.and(
-                            employee.hireDate.gt(hireCursor)
-                                .or(employee.hireDate.eq(hireCursor).and(employee.id.gt(idAfter)))
-                        );
-                    }
-                }
-                default -> {
-                    if ("desc".equalsIgnoreCase(sortDirection)) {
-                        builder.and(
-                            employee.name.lt(cursor)
-                                .or(employee.name.eq(cursor).and(employee.id.lt(idAfter)))
-                        );
-                    } else {
-                        builder.and(
-                            employee.name.gt(cursor)
-                                .or(employee.name.eq(cursor).and(employee.id.gt(idAfter)))
-                        );
-                    }
-                }
-            }
+        if (request.cursor() != null) {
+            builder.and(buildSortCondition(request.cursor(), request.sortField(),
+                request.sortDirection(), request.idAfter()));
         }
 
         // 정렬
-        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortField, sortDirection);
+        OrderSpecifier<?> orderSpecifier = getOrderSpecifier(request.sortField(),
+            request.sortDirection());
 
         // 데이터 조회
         List<EmployeeDto> results = queryFactory
@@ -132,17 +101,17 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
             .from(employee)
             .where(builder)
             .orderBy(orderSpecifier, employee.id.asc()) // 정렬 필드 다음에 id 정렬
-            .limit(size + 1)
+            .limit(request.size() + 1)
             .fetch();
 
-        boolean hasNext = results.size() > size;
-        List<EmployeeDto> content = hasNext ? results.subList(0, size) : results;
+        boolean hasNext = results.size() > request.size();
+        List<EmployeeDto> content = hasNext ? results.subList(0, request.size()) : results;
 
         String nextCursor = null;
         Long nextId = null;
         if (hasNext) {
             EmployeeDto last = content.get(content.size() - 1);
-            nextCursor = switch (sortField) {
+            nextCursor = switch (request.sortField()) {
                 case "employeeNumber" -> last.employeeNumber();
                 case "hireDate" -> last.hireDate().toString();
                 default -> last.name();
@@ -151,7 +120,7 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
         }
 
         return new CursorPageResponseEmployeeDto<>(
-            content, nextCursor, nextId, size, results.size(), hasNext
+            content, nextCursor, nextId, request.size(), total, hasNext
         );
     }
 
@@ -162,11 +131,12 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
             : employee.department.name;
 
         // 전체 수 (percent 계산용)
-        long totalCount = queryFactory
-            .select(employee.count())
-            .from(employee)
-            .where(employee.status.eq(status))
-            .fetchOne();
+        long totalCount = Optional.ofNullable(
+            queryFactory.select(employee.count())
+                .from(employee)
+                .where(employee.status.eq(status))
+                .fetchOne()
+        ).orElse(0L);
 
         if (totalCount == 0) return List.of();
 
@@ -205,5 +175,51 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
             case "hireDate" -> new OrderSpecifier<>(order, employee.hireDate);
             default -> new OrderSpecifier<>(order, employee.name);
         };
+    }
+
+    private BooleanExpression buildSortCondition(String cursor, String sortField, String sortDirection, Long idAfter) {
+        if (cursor == null) {
+            return null;
+        }
+
+        switch (sortField) {
+            case "employeeNumber":
+                return buildEmployeeNumberCondition(cursor, sortDirection, idAfter);
+            case "hireDate":
+                return buildHireDateCondition(cursor, sortDirection, idAfter);
+            default:
+                return buildNameCondition(cursor, sortDirection, idAfter);
+        }
+    }
+
+    private BooleanExpression buildEmployeeNumberCondition(String cursor, String sortDirection, Long idAfter) {
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            return employee.employeeNumber.lt(cursor)
+                .or(employee.employeeNumber.eq(cursor).and(employee.id.lt(idAfter)));
+        } else {
+            return employee.employeeNumber.gt(cursor)
+                .or(employee.employeeNumber.eq(cursor).and(employee.id.gt(idAfter)));
+        }
+    }
+
+    private BooleanExpression buildHireDateCondition(String cursor, String sortDirection, Long idAfter) {
+        LocalDate hireCursor = LocalDate.parse(cursor);
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            return employee.hireDate.lt(hireCursor)
+                .or(employee.hireDate.eq(hireCursor).and(employee.id.lt(idAfter)));
+        } else {
+            return employee.hireDate.gt(hireCursor)
+                .or(employee.hireDate.eq(hireCursor).and(employee.id.gt(idAfter)));
+        }
+    }
+
+    private BooleanExpression buildNameCondition(String cursor, String sortDirection, Long idAfter) {
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            return employee.name.lt(cursor)
+                .or(employee.name.eq(cursor).and(employee.id.lt(idAfter)));
+        } else {
+            return employee.name.gt(cursor)
+                .or(employee.name.eq(cursor).and(employee.id.gt(idAfter)));
+        }
     }
 }
