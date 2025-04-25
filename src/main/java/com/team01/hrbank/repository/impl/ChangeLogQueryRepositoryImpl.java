@@ -19,7 +19,7 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
 
     private final JPAQueryFactory queryFactory;
     private final ChangeLogMapper changeLogMapper;
-    private QChangeLog q = QChangeLog.changeLog;
+    private QChangeLog qChangeLog = QChangeLog.changeLog;
 
     @Override
     public List<ChangeLog> findByConditions(
@@ -33,29 +33,33 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
         BooleanBuilder where = new BooleanBuilder();
 
         if (employeeNumber != null && !employeeNumber.isBlank()) {
-            where.and(q.employeeNumber.containsIgnoreCase(employeeNumber));
+            where.and(qChangeLog.employeeNumber.containsIgnoreCase(employeeNumber));
         }
         if (type != null) {
-            where.and(q.type.eq(type));
+            where.and(qChangeLog.type.eq(type));
         }
         // 부분 검색이 가능
         // employeeNumber LIKE %xxx% 와 비슷
         if (memo != null && !memo.isBlank()) {
-            where.and(q.memo.containsIgnoreCase(memo));
+            where.and(qChangeLog.memo.containsIgnoreCase(memo));
         }
         if (ipAddress != null && !ipAddress.isBlank()) {
-            where.and(q.ipAddress.containsIgnoreCase(ipAddress));
+            where.and(qChangeLog.ipAddress.containsIgnoreCase(ipAddress));
         }
         if (atFrom != null) {
-            where.and(q.updatedAt.goe(atFrom));
+            where.and(qChangeLog.updatedAt.goe(atFrom));
         }
         if (atTo != null) {
-            where.and(q.updatedAt.loe(atTo));
+            where.and(qChangeLog.updatedAt.loe(atTo));
         }
         // 커서 기반 페이지네이션을 위해 필요하다.
-        // 이전 페이지 마지막 ID보다 큰 항목 만 조호히하여 다음 페이지를 구현할 수 있도록 한다.
+        // gt, lt 두가지를 활용하여 ID를 기준으로 오름, 내림차순 모두 정렬 가능하도록 한다.
         if (idAfter != null) {
-            where.and(q.id.gt(idAfter));
+            if ("desc".equalsIgnoreCase(sortDirection)) {
+                where.and(qChangeLog.id.lt(idAfter)); // 내림차순 → 작은 ID를 기준으로
+            } else {
+                where.and(qChangeLog.id.gt(idAfter)); // 오름차순 → 큰 ID를 기준으로
+            }
         }
 
         // 정렬 조건
@@ -63,7 +67,7 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
         OrderSpecifier<?> order = buildOrderSpecifier(sortField, sortDirection);
 
         return queryFactory
-            .selectFrom(q)
+            .selectFrom(qChangeLog)
             .where(where)
             .orderBy(order)
             .limit(size+1) // 다음 페이지 여부 판단용
@@ -78,27 +82,27 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
         BooleanBuilder where = new BooleanBuilder();
 
         if (employeeNumber != null && !employeeNumber.isBlank()) {
-            where.and(q.employeeNumber.containsIgnoreCase(employeeNumber));
+            where.and(qChangeLog.employeeNumber.containsIgnoreCase(employeeNumber));
         }
         if (type != null) {
-            where.and(q.type.eq(type));
+            where.and(qChangeLog.type.eq(type));
         }
         if (memo != null && !memo.isBlank()) {
-            where.and(q.memo.containsIgnoreCase(memo));
+            where.and(qChangeLog.memo.containsIgnoreCase(memo));
         }
         if (ipAddress != null && !ipAddress.isBlank()) {
-            where.and(q.ipAddress.containsIgnoreCase(ipAddress));
+            where.and(qChangeLog.ipAddress.containsIgnoreCase(ipAddress));
         }
         if (atFrom != null) {
-            where.and(q.updatedAt.goe(atFrom));
+            where.and(qChangeLog.updatedAt.goe(atFrom));
         }
         if (atTo != null) {
-            where.and(q.updatedAt.loe(atTo));
+            where.and(qChangeLog.updatedAt.loe(atTo));
         }
 
         return queryFactory
-            .select(q.count())
-            .from(q)
+            .select(qChangeLog.count())
+            .from(qChangeLog)
             .where(where)
             .fetchOne();
     }
@@ -107,9 +111,9 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
         boolean asc = sortDirection == null || sortDirection.equalsIgnoreCase("asc");
 
         if ("ipAddress".equals(sortField)) {
-            return asc ? q.ipAddress.asc() : q.ipAddress.desc();
+            return asc ? qChangeLog.ipAddress.asc() : qChangeLog.ipAddress.desc();
         }
         // default: updatedAt
-        return asc ? q.updatedAt.asc() : q.updatedAt.desc();
+        return asc ? qChangeLog.updatedAt.asc() : qChangeLog.updatedAt.desc();
     }
 }
