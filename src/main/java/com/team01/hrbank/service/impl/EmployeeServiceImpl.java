@@ -1,15 +1,15 @@
 package com.team01.hrbank.service.impl;
 
-import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
-import com.team01.hrbank.dto.employee.EmployeeTrendDto;
-import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
+import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeDto;
+import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
+import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.enums.TimeUnit;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
@@ -21,18 +21,13 @@ import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -98,29 +93,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         String status, String cursor, Long idAfter,
         int size, String sortField, String sortDirection
     ) {
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Pageable pageable = PageRequest.of(0, size + 1, Sort.by(direction, sortField).and(Sort.by(direction, "id")));
-
-        Slice<Employee> employees = employeeRepository.findEmployeesByCursor(
+        return employeeQueryRepository.findEmployeeByCursor(
             nameOrEmail, employeeNumber, departmentName, position,
-            hireDateFrom, hireDateTo, status,
-            pageable
-        );
-
-        boolean hasNext = employees.getContent().size() > size;
-
-        List<EmployeeDto> content = employees.getContent().stream()
-            .limit(size)
-            .map(employeeMapper::toDto)
-            .toList();
-
-        Employee last = hasNext ? employees.getContent().get(size) : null;
-        String nextCursor = last != null ? getSortValue(last, sortField) : null;
-        Long nextIdAfter = last != null ? last.getId() : null;
-
-        return new CursorPageResponseEmployeeDto<>(
-            content, nextCursor, nextIdAfter, size,
-            employees.getNumberOfElements(), hasNext
+            hireDateFrom, hireDateTo, EmployeeStatus.valueOf(status.toUpperCase()),
+            idAfter, cursor ,size, sortField, sortDirection
         );
     }
 
@@ -252,7 +228,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeQueryRepository.employeeCountBy(employeeStatus, fromDate, toDate);
     }
 
-
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
         return switch (unit.toLowerCase()) {
             case "day" -> to.minusDays(12);
@@ -260,15 +235,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             case "quarter" -> to.minusMonths(36); // 12 quarters
             case "year" -> to.minusYears(12);
             default -> to.minusMonths(12);
-        };
-    }
-
-    private String getSortValue(Employee employee, String sortField) {
-        return switch (sortField) {
-            case "name" -> employee.getName();
-            case "employeeNumber" -> employee.getEmployeeNumber();
-            case "hireDate" -> employee.getHireDate().toString();
-            default -> null;
         };
     }
 }
