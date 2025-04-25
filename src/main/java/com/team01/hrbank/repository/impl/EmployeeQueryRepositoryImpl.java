@@ -7,6 +7,10 @@ import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.entity.QEmployee;
 import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -45,5 +49,20 @@ public class EmployeeQueryRepositoryImpl implements EmployeeQueryRepository {
             .groupBy(groupExpression)
             .orderBy(employee.count().desc())
             .fetch();
+    }
+
+    @Override
+    public Long employeeCountBy(EmployeeStatus status, LocalDate fromDate, LocalDate toDate) {
+        return queryFactory
+            .select(employee.count())
+            .from(employee)
+            .where(
+                employee.status.eq(status),
+//                employee.createdAt.goe(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+//                employee.createdAt.loe(toDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant())
+                fromDate != null ? employee.createdAt.goe(fromDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) : null,
+                toDate != null ? employee.createdAt.loe(toDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant()) : null
+            )
+            .fetchOne();
     }
 }

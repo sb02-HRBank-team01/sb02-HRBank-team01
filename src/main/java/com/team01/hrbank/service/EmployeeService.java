@@ -23,5 +23,6 @@ public interface EmployeeService {
   List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit);
   List<EmployeeDistributionDto> getEmployeeDistribution(String groupBy, String status);
   EmployeeDto update(EmployeeUpdateRequest updateRequest, Long id, MultipartFile profile) throws IOException;
+  Long employeeCount(String status, LocalDate fromDate, LocalDate toDate);
   void delete(Long id);
 }
