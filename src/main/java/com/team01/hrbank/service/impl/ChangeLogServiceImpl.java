@@ -1,0 +1,97 @@
+package com.team01.hrbank.service.impl;
+
+import com.team01.hrbank.dto.changelog.ChangeLogDto;
+import com.team01.hrbank.dto.changelog.CursorPageResponseChangeLogDto;
+import com.team01.hrbank.dto.changelog.DiffDto;
+import com.team01.hrbank.entity.ChangeLog;
+import com.team01.hrbank.entity.ChangeLogDetail;
+import com.team01.hrbank.enums.ChangeType;
+import com.team01.hrbank.mapper.ChangeLogMapper;
+import com.team01.hrbank.repository.ChangeLogDetailRepository;
+import com.team01.hrbank.repository.ChangeLogRepository;
+import com.team01.hrbank.service.ChangeLogService;
+import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.stereotype.Service;
+
+// 직원의 정보가 변경되었을 때, 어떤 필드가 어떻게 바뀌었는지를 ChangeLog, ChangeLogDetail 테이블에 기록
+@Service
+@RequiredArgsConstructor
+public class ChangeLogServiceImpl implements ChangeLogService {
+    private final ChangeLogRepository changeLogRepository;  // 이력 정보 저장/조회
+    private final ChangeLogMapper changeLogMapper;  // Entity -> Dto 변환 역할
+    private final ChangeLogDetailRepository changeLogDetailRepository;  // 변경 필드 정보 저장/조회
+
+    @Override
+    public CursorPageResponseChangeLogDto searchChangeLogs(
+        String employeeNumber,
+        ChangeType type,
+        String memo,
+        String ipAddress,
+        Instant atFrom,
+        Instant atTo,
+        Long idAfter,
+        String sortField,
+        String sortDirection,
+        int size
+    ) {
+        // 1. 데이터 조건 검색 (size + 1로 조회해 hasNext 판단)
+        List<ChangeLog> logs = changeLogRepository.findByConditions(
+            employeeNumber, type, memo, ipAddress,
+            atFrom, atTo, idAfter,
+            sortField, sortDirection,
+            size + 1
+        );
+
+        // 2. 다음 페이지 존재 여부 판단
+        boolean hasNext = logs.size() > size;
+        if (hasNext) {
+            logs = logs.subList(0, size);
+        }
+
+        // 3. DTO 변환
+        List<ChangeLogDto> dtos = logs.stream()
+            .map(changeLogMapper::toDto)
+            .collect(Collectors.toList());
+
+        // 4. 다음 커서(ID) 설정
+        Long nextIdAfter = hasNext ? logs.get(logs.size() - 1).getId() : null;
+        String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
+
+        // 5. 조건 기반 전체 개수 조회
+        long totalElements = changeLogRepository.countByConditions(
+            employeeNumber, type, memo, ipAddress, atFrom, atTo
+        );
+
+        // 6. 최종 응답 DTO 구성
+        return new CursorPageResponseChangeLogDto(
+            dtos,
+            nextCursor,
+            nextIdAfter,
+            size,
+            totalElements,
+            hasNext
+        );
+    }
+    @Override
+    @Transactional
+    // 이력(ChangeLog), 변경 필드(ChangeLogDetail) 리스트 저장
+    public void save(ChangeType type, String employeeNumber, List<DiffDto> details, String memo, String ipAddress) {
+        // ChangeLog 객체 생성 (type, 사번, memo, IP)
+        ChangeLog changeLog = new ChangeLog(type, employeeNumber, memo, ipAddress);
+        // ChangeLogRepository.save(log)로 저장
+        changeLogRepository.save(changeLog);
+
+        // DiffDto 리스트를 순회하면서 각각 ChangeLogDetail로 변환
+        List<ChangeLogDetail> detailEntities = details.stream()
+            .map(diffDto -> new ChangeLogDetail(changeLog, diffDto.propertyName(), diffDto.before(), diffDto.after()))
+            .toList();
+
+        changeLogDetailRepository.saveAll(detailEntities);
+    }
+}
