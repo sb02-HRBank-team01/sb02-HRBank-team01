@@ -9,6 +9,7 @@ import com.team01.hrbank.entity.QDepartment;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.repository.custom.DepartmentQueryRepository;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -47,11 +48,43 @@ public class DepartmentRepositoryImpl implements DepartmentQueryRepository {
         }
 
         // 커서 기반 페이지 네이션
-        if (idAfter != null) {
-            if ("desc".equalsIgnoreCase(sortDirection)) {
-                whereClause.and(department.id.lt(idAfter)); // 내림차순이면 id < idAfter
-            } else {
-                whereClause.and(department.id.gt(idAfter)); // 오름차순이면 id > idAfter
+        if (cursor != null && idAfter != null) {
+            // 설립일 기준 정렬일 때
+            if ("establishedDate".equalsIgnoreCase(sortField)) {
+                LocalDate cursorDate = LocalDate.parse(cursor);
+
+                if ("desc".equalsIgnoreCase(sortDirection)) {
+                    // 내림 차순
+                    whereClause.and(
+                        department.establishedDate.lt(cursorDate)
+                            .or(department.establishedDate.eq(cursorDate)
+                                .and(department.id.lt(idAfter)))
+                    );
+                } else {
+                    // 오름 차순
+                    whereClause.and(
+                        department.establishedDate.gt(cursorDate)
+                            .or(department.establishedDate.eq(cursorDate)
+                                .and(department.id.gt(idAfter)))
+                    );
+                }
+            // 이름 기준 정렬일 때
+            } else if ("name".equalsIgnoreCase(sortField)) {
+                if ("desc".equalsIgnoreCase(sortDirection)) {
+                    // 내림 차순
+                    whereClause.and(
+                        department.name.lt(cursor)
+                            .or(department.name.eq(cursor)
+                                .and(department.id.lt(idAfter)))
+                    );
+                } else {
+                    // 오름 차순
+                    whereClause.and(
+                        department.name.gt(cursor)
+                            .or(department.name.eq(cursor)
+                                .and(department.id.gt(idAfter)))
+                    );
+                }
             }
         }
 
