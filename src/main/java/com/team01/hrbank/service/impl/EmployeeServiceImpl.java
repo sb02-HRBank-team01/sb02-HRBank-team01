@@ -1,5 +1,6 @@
 package com.team01.hrbank.service.impl;
 
+import com.team01.hrbank.dto.changelog.DiffDto;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
@@ -9,6 +10,7 @@ import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
+import com.team01.hrbank.enums.ChangeType;
 import com.team01.hrbank.enums.EmployeeStatus;
 import com.team01.hrbank.enums.TimeUnit;
 import com.team01.hrbank.exception.DuplicateException;
@@ -18,8 +20,10 @@ import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
+import com.team01.hrbank.service.ChangeLogService;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
+import com.team01.hrbank.util.DiffUtil;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,6 +31,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.builder.Diff;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentRepository binaryContentRepository;
     private final EmployeeQueryRepository employeeQueryRepository;
+    private final ChangeLogService changeLogService;
 
     private static final String EMPLOYEE = "직원";
     private static final String DEPARTMENT = "부서";
@@ -77,6 +83,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         );
 
         employeeRepository.save(employee);
+
+        // 직원 저장 후 changelog등록
+        changeLogService.save(
+            ChangeType.CREATED,
+            employee.getEmployeeNumber(),
+            // DiffDto는 변경 시 필요 -> 빈 리스트
+            List.of(),
+            "직원 생성",
+            "127.0.0.1"
+        );
 
         if (binaryContent != null) {
             binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
@@ -132,6 +148,20 @@ public class EmployeeServiceImpl implements EmployeeService {
             binaryContent = binaryContentRepository.save(binaryContent);
         }
 
+        // changeLog
+        // 수정 전/후 비교 후 변경 사항(diff) 기록
+        List<DiffDto> diffs = DiffUtil.compare(employee, updateRequest);
+
+        // changelog 등록
+        changeLogService.save(
+            ChangeType.UPDATED,
+            employee.getEmployeeNumber(),
+            diffs,
+            // TODO: memo, ipAdress는 사용자 입력 및 controller에서 제어 고려
+            "직원 정보 수정",
+            "127.0.0.1"
+        );
+
         employee.update(
             updateRequest.name(),
             updateRequest.email(),
@@ -155,8 +185,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public void delete(Long id) {
-        employeeRepository.findById(id)
+        Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+
+        // changelog
+        changeLogService.save(
+            ChangeType.DELETED,
+            employee.getEmployeeNumber(),
+            List.of(),
+            "직원 삭제",
+            "127.0.0.1"
+        );
+
         employeeRepository.deleteById(id);
     }
 

@@ -107,13 +107,16 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
             .fetchOne();
     }
 
+    // 정렬 기준과 방향을 받아서 QueryDSL의 OrderSpecifier 객체를 만드는 역할
     private OrderSpecifier<?> buildOrderSpecifier(String sortField, String sortDirection) {
+        // null 또는 asc일 경우 오름차순
         boolean asc = sortDirection == null || sortDirection.equalsIgnoreCase("asc");
 
-        if ("ipAddress".equals(sortField)) {
-            return asc ? qChangeLog.ipAddress.asc() : qChangeLog.ipAddress.desc();
-        }
-        // default: updatedAt
-        return asc ? qChangeLog.updatedAt.asc() : qChangeLog.updatedAt.desc();
+        // sortField가 지원하지 않는 필드여도 동적 정렬이 가능한 것을 throw로 방지
+        return switch (sortField) {
+            case "ipAddress" -> asc ? qChangeLog.ipAddress.asc() : qChangeLog.ipAddress.desc();
+            case "updatedAt", "at", "", null -> asc ? qChangeLog.updatedAt.asc() : qChangeLog.updatedAt.desc();
+            default -> throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다: " + sortField);
+        };
     }
 }

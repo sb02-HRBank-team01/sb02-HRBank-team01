@@ -6,10 +6,12 @@ import com.team01.hrbank.dto.changelog.DiffDto;
 import com.team01.hrbank.entity.ChangeLog;
 import com.team01.hrbank.entity.ChangeLogDetail;
 import com.team01.hrbank.enums.ChangeType;
+import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.ChangeLogMapper;
 import com.team01.hrbank.repository.ChangeLogDetailRepository;
 import com.team01.hrbank.repository.ChangeLogRepository;
 import com.team01.hrbank.service.ChangeLogService;
+import com.team01.hrbank.util.CursorUtil;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +28,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
     private final ChangeLogDetailRepository changeLogDetailRepository;  // 변경 필드 정보 저장/조회
 
     @Override
+    @Transactional(readOnly = true)
     public CursorPageResponseChangeLogDto searchChangeLogs(
         String employeeNumber,
         ChangeType type,
@@ -38,7 +41,15 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         String sortDirection,
         int size
     ) {
-        // 1. 데이터 조건 검색 (size + 1로 조회해 hasNext 판단)
+        // 0. 현재 조회 기준 시간 기록
+        Instant queryTime = Instant.now();
+
+        // 1. 커서 값 검증 (idAfter 유효값 검증)
+        if(idAfter != null && changeLogRepository.existsById(idAfter)){
+            throw new IllegalArgumentException("유효하지 않은 커서 값입니다.: idAfter = " + idAfter);
+        }
+
+        // 2. 데이터 조건 검색 (size + 1로 조회해 hasNext 판단)
         List<ChangeLog> logs = changeLogRepository.findByConditions(
             employeeNumber, type, memo, ipAddress,
             atFrom, atTo, idAfter,
@@ -46,27 +57,28 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             size + 1
         );
 
-        // 2. 다음 페이지 존재 여부 판단
+        // 3. 다음 페이지 존재 여부 판단
         boolean hasNext = logs.size() > size;
         if (hasNext) {
             logs = logs.subList(0, size);
         }
 
-        // 3. DTO 변환
+        // 4. Entity -> DTO 변환
         List<ChangeLogDto> dtos = logs.stream()
             .map(changeLogMapper::toDto)
             .collect(Collectors.toList());
 
-        // 4. 다음 커서(ID) 설정
+        // 5. 다음 커서(ID) 설정
         Long nextIdAfter = hasNext ? logs.get(logs.size() - 1).getId() : null;
-        String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
+        // encode설정
+        String nextCursor = nextIdAfter != null ? CursorUtil.encodeCursor(nextIdAfter) : null;
 
-        // 5. 조건 기반 전체 개수 조회
+        // 6. 조건 기반 전체 개수 조회
         long totalElements = changeLogRepository.countByConditions(
             employeeNumber, type, memo, ipAddress, atFrom, atTo
         );
 
-        // 6. 최종 응답 DTO 구성
+        // 7. 최종 응답 DTO 구성
         return new CursorPageResponseChangeLogDto(
             dtos,
             nextCursor,
@@ -76,6 +88,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             hasNext
         );
     }
+
     @Override
     @Transactional
     // 이력(ChangeLog), 변경 필드(ChangeLogDetail) 리스트 저장
@@ -103,6 +116,11 @@ public class ChangeLogServiceImpl implements ChangeLogService {
     @Transactional(readOnly = true)
     // 직원 정보 수정 이력 상세 조회
     public List<DiffDto> findChangeDetails(Long changeLogId) {
+        // changeLog가 존재하지 않을 경우
+        boolean exists = changeLogRepository.existsById(changeLogId);
+        if (!exists) {
+            throw new EntityNotFoundException("ChangeLog", changeLogId);
+        }
         // 해당 이력의 ChangeDetail 필드 목록 조회
         List<ChangeLogDetail> details = changeLogDetailRepository.findAllByChangeLogId(changeLogId);
 
