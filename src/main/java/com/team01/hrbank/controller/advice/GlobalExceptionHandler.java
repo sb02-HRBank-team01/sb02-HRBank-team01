@@ -5,12 +5,14 @@ import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.exception.InvalidSortParameterException;
 import java.time.Instant;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -114,6 +116,18 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST.value(),
             "잘못된 요청입니다.",
             ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    // 400 : 타입 매치 에러
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "잘못된 요청입니다.",
+            ex.getName() +  " : " + Objects.requireNonNull(ex.getValue())
         );
         return ResponseEntity.badRequest().body(error);
     }

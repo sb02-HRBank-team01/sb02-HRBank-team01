@@ -42,7 +42,7 @@ public class EmployeeController {
         @RequestParam(required = false) String position,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hireDateFrom,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hireDateTo,
-        @RequestParam(required = false, defaultValue = "ACTIVE") String status,
+        @RequestParam(required = false) String status,
         @RequestParam(required = false) String cursor,
         @RequestParam(required = false) Long idAfter,
         @RequestParam(defaultValue = "10") int size,

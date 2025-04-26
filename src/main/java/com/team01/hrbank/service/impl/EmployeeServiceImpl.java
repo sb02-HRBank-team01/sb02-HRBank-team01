@@ -25,6 +25,7 @@ import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import com.team01.hrbank.util.DiffUtil;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -106,10 +107,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         String status, String cursor, Long idAfter,
         int size, String sortField, String sortDirection
     ) {
+        EmployeeStatus statusEnum = null;
+        if (status != null && !status.trim().isEmpty()) {
+            statusEnum = EmployeeStatus.valueOf(status.toUpperCase());
+        }
+
         CursorPageRequestEmployeeDto request = new CursorPageRequestEmployeeDto(
             nameOrEmail, employeeNumber, departmentName,
             position, hireDateFrom, hireDateTo,
-            EmployeeStatus.valueOf(status.toUpperCase()), idAfter ,cursor,
+            statusEnum, idAfter ,cursor,
             size, sortField, sortDirection
         );
 
@@ -203,34 +209,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
-        TimeUnit timeUnit = TimeUnit.from(unit);
-
+        // 기본값 설정
+        LocalDate now = LocalDate.now();
         if (to == null) {
-            to = LocalDate.now();
+            to = now;
         }
         if (from == null) {
             from = calculateDefaultFrom(to, unit);
         }
 
-        List<Object[]> rawResult = employeeRepository.countEmployeeTrend(from, to,
-            timeUnit.name().toLowerCase());
-
-        List<EmployeeTrendDto> trendList = new ArrayList<>();
-        Long previousCount = null;
-
-        for (Object[] row : rawResult) {
-            LocalDate date = ((Instant) row[0]).atZone(ZoneId.systemDefault()).toLocalDate();
-            Long count = ((Number) row[1]).longValue();
-
-            Long change = (previousCount == null) ? null : count - previousCount;
-            Double changeRate = (previousCount == null || previousCount == 0)
-                ? null : (change * 100.0) / previousCount;
-
-            trendList.add(new EmployeeTrendDto(date, count, change, changeRate));
-            previousCount = count;
-        }
-
-        return trendList;
+        return employeeRepository.findEmployeeTrend(from, to, unit);
     }
 
     @Override
@@ -272,9 +260,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         return switch (unit.toLowerCase()) {
             case "day" -> to.minusDays(12);
             case "week" -> to.minusWeeks(12);
-            case "quarter" -> to.minusMonths(12);
+            case "quarter" -> to.minusMonths(12 * 3); // 12분기 = 3년
             case "year" -> to.minusYears(12);
-            default -> to.minusMonths(12);
+            default -> to.minusMonths(12); // month 기본값
         };
     }
 }
