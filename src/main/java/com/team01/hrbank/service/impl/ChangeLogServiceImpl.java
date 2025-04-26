@@ -11,7 +11,6 @@ import com.team01.hrbank.mapper.ChangeLogMapper;
 import com.team01.hrbank.repository.ChangeLogDetailRepository;
 import com.team01.hrbank.repository.ChangeLogRepository;
 import com.team01.hrbank.service.ChangeLogService;
-import com.team01.hrbank.util.CursorUtil;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
@@ -41,9 +40,6 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         String sortDirection,
         int size
     ) {
-        // 0. 현재 조회 기준 시간 기록
-        Instant queryTime = Instant.now();
-
         // 1. 커서 값 검증 (idAfter 유효값 검증)
         if(idAfter != null && changeLogRepository.existsById(idAfter)){
             throw new IllegalArgumentException("유효하지 않은 커서 값입니다.: idAfter = " + idAfter);
@@ -71,7 +67,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         // 5. 다음 커서(ID) 설정
         Long nextIdAfter = hasNext ? logs.get(logs.size() - 1).getId() : null;
         // encode설정
-        String nextCursor = nextIdAfter != null ? CursorUtil.encodeCursor(nextIdAfter) : null;
+        String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
 
         // 6. 조건 기반 전체 개수 조회
         long totalElements = changeLogRepository.countByConditions(
