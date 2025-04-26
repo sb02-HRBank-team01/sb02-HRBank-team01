@@ -7,6 +7,7 @@ import com.team01.hrbank.exception.InvalidSortParameterException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -80,6 +81,31 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+
+    // Enum 파라미터 에러
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidEnum(HttpMessageNotReadableException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "잘못된 요청 형식입니다. 파라미터를 확인해주세요.",
+            ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    // 400 error
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "요청 파라미터가 잘못되었습니다.",
+            ex.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
 
     @ExceptionHandler(InvalidSortParameterException.class)
     public ResponseEntity<ErrorResponse> handleInvalidSort(InvalidSortParameterException ex) {

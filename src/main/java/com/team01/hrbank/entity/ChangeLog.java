@@ -29,7 +29,7 @@ public class ChangeLog extends BaseUpdatableEntity {
     private String ipAddress;
 
     // `updatedAt`을 Swagger의 "at" 필드로 사용 (BaseUpdatableEntity에서 상속됨)
-
+    // changelogServiceImpl 파일에서 detailEntities.forEach(changeLog::addDetail);의 역할을 @OneTomany가 해주고 있음
     @OneToMany(mappedBy = "changeLog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChangeLogDetail> details = new ArrayList<>();
 

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChangeLogDetail extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "change_log_id", nullable = false)
     private ChangeLog changeLog;
 
@@ -24,6 +24,7 @@ public class ChangeLogDetail extends BaseEntity {
     private String after;
 
     public ChangeLogDetail(ChangeLog changeLog, String propertyName, String before, String after) {
+        this.changeLog = changeLog;
         this.propertyName = propertyName;
         this.before = before;
         this.after = after;

@@ -5,11 +5,11 @@ import com.team01.hrbank.dto.changelog.CursorPageResponseChangeLogDto;
 import com.team01.hrbank.dto.changelog.DiffDto;
 import com.team01.hrbank.enums.ChangeType;
 import com.team01.hrbank.service.ChangeLogService;
+import com.team01.hrbank.util.CursorUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -34,11 +34,14 @@ public class ChangeLogController {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atFrom,
         @RequestParam(required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atTo,
-        @RequestParam(required = false) Long idAfter,
+        @RequestParam(required = false) String cursor,
         @RequestParam(defaultValue = "at") String sortField,
         @RequestParam(defaultValue = "desc") String sortDirection,
         @RequestParam(defaultValue = "10") int size
     ) {
+        // Base64 cursor를 long값으로 변환
+        Long idAfter = CursorUtil.decodeCursor(cursor);
+
         return changeLogService.searchChangeLogs(
             employeeNumber,
             type,
