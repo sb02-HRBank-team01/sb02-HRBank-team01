@@ -25,19 +25,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, Emplo
         "LEFT JOIN FETCH e.profile " +
         "WHERE e.id = :id")
     Optional<Employee> findWithDetailsById(@Param("id") Long id);
-
-    @Query(value = """
-        SELECT DATE_TRUNC(:unit, e.hire_date) AS date, COUNT(*) AS count
-        FROM employees e
-        WHERE e.hire_date BETWEEN :from AND :to
-        GROUP BY date
-        ORDER BY date
-    """, nativeQuery = true)
-    List<Object[]> countEmployeeTrend(
-        @Param("from") LocalDate from,
-        @Param("to") LocalDate to,
-        @Param("unit") String unit
-    );
-
-
 }
