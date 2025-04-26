@@ -40,11 +40,13 @@ public class DepartmentRepositoryImpl implements DepartmentQueryRepository {
         // 정렬 필드 지정
         OrderSpecifier<?> orderSpecifier;
         if ("name".equalsIgnoreCase(sortField)) {
-            orderSpecifier = "desc".equalsIgnoreCase(sortField) ?
-                department.name.desc() : department.name.asc();
+            orderSpecifier = "desc".equalsIgnoreCase(sortDirection)
+                ? department.name.desc()
+                : department.name.asc();
         } else {
-            orderSpecifier = "desc".equalsIgnoreCase(sortField) ?
-                department.establishedDate.desc() : department.establishedDate.asc();
+            orderSpecifier = "desc".equalsIgnoreCase(sortDirection)
+                ? department.establishedDate.desc()
+                : department.establishedDate.asc();
         }
 
         // 커서 기반 페이지 네이션
