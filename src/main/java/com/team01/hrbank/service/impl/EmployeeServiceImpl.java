@@ -20,7 +20,6 @@ import com.team01.hrbank.mapper.EmployeeMapper;
 import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
-import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import com.team01.hrbank.service.ChangeLogService;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
@@ -32,8 +31,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.builder.Diff;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +44,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentRepository binaryContentRepository;
-    private final EmployeeQueryRepository employeeQueryRepository;
     private final ChangeLogService changeLogService;
 
     private static final String EMPLOYEE = "직원";
