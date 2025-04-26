@@ -7,11 +7,11 @@ import com.team01.hrbank.dto.department.DepartmentUpdateRequest;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
+import com.team01.hrbank.exception.InvalidSortParameterException;
 import com.team01.hrbank.mapper.DepartmentMapper;
 import com.team01.hrbank.repository.DepartmentRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.DepartmentService;
-import com.team01.hrbank.util.CursorUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -89,12 +89,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     public CursorPageResponseDepartmentDto getDepartments(String nameOrDescription, Long idAfter,
         String cursor, int size, String sortField, String sortDirection) {
 
-        // 1. cursor 디코딩 -> idAfter로 변환
-        Long decodedIdAfter = (cursor != null && !cursor.isEmpty()) ? CursorUtil.decodeCursor(cursor) : idAfter;
+        // 1. 정렬 파라미터 검증
+        if (!sortField.equalsIgnoreCase("name") && !sortField.equalsIgnoreCase("establishedDate")) {
+            throw new InvalidSortParameterException(sortField);
+        }
+
+        if (!sortDirection.equalsIgnoreCase("asc") && !sortDirection.equalsIgnoreCase("desc")) {
+            throw new InvalidSortParameterException(sortDirection);
+        }
+
+        String lastSortValue = cursor;
+        Long lastId = idAfter;
 
         // 2. Repository 호출 (size + 1로 hasNext 확인)
         List<DepartmentDto> departmentList = departmentRepository.findDepartmentsWithConditions(
-            nameOrDescription, decodedIdAfter, sortField, sortDirection, size + 1
+            nameOrDescription, lastSortValue, lastId, sortField, sortDirection, size + 1
         );
 
         // 3. hasNext 판단
@@ -105,13 +114,15 @@ public class DepartmentServiceImpl implements DepartmentService {
             ? departmentList.subList(0, size)
             : departmentList;
 
-        // 5. nextIdAfter 계산
+        // 5. nextCursor = 마지막 정렬 필드 값 그대로
+        String nextCursor = hasNext && !content.isEmpty()
+            ? getSortFieldValue(content.get(content.size() - 1), sortField)
+            : null;
+
+        // 6. nextIdAfter = 마지막 ID 그대로
         Long nextIdAfter = hasNext && !content.isEmpty()
             ? content.get(content.size() - 1).id()
             : null;
-
-        // 6. nextCursor 인코딩
-        String nextCursor = CursorUtil.encodeCursor(nextIdAfter);
 
         // 7. 전체 요소 수 계산
         long totalElements = departmentRepository.count();
@@ -125,5 +136,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             totalElements,
             hasNext
         );
+    }
+
+    // 정렬 필드 값 추출
+    private String getSortFieldValue(DepartmentDto dto, String sortField) {
+        if ("name".equalsIgnoreCase(sortField)) {
+            return dto.name();
+        } else {
+            return dto.establishedDate().toString(); // 날짜를 문자열로 반환
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.team01.hrbank.repository;
 
 import com.team01.hrbank.entity.Employee;
 
+import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long>, EmployeeQueryRepository {
 
     boolean existsByEmail(String email);
 
@@ -32,7 +33,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
         GROUP BY date
         ORDER BY date
     """, nativeQuery = true)
-    List<Object[]> countActiveGroupedByUnit(
+    List<Object[]> countEmployeeTrend(
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
         @Param("unit") String unit

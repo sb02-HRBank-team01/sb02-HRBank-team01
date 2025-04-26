@@ -6,6 +6,7 @@ import java.util.List;
 public interface DepartmentQueryRepository {
 
     List<DepartmentDto> findDepartmentsWithConditions(
-        String nameOrDescription, Long idAfter, String sortField, String sortDirection, int size
+        String nameOrDescription, String cursor, Long idAfter,
+        String sortField, String sortDirection, int size
     );
 }

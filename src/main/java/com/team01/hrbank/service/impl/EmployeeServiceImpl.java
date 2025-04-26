@@ -1,5 +1,6 @@
 package com.team01.hrbank.service.impl;
 
+import com.team01.hrbank.dto.employee.CursorPageRequestEmployeeDto;
 import com.team01.hrbank.dto.changelog.DiffDto;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
@@ -109,11 +110,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         String status, String cursor, Long idAfter,
         int size, String sortField, String sortDirection
     ) {
-        return employeeQueryRepository.findEmployeeByCursor(
-            nameOrEmail, employeeNumber, departmentName, position,
-            hireDateFrom, hireDateTo, EmployeeStatus.valueOf(status.toUpperCase()),
-            idAfter, cursor ,size, sortField, sortDirection
+        CursorPageRequestEmployeeDto request = new CursorPageRequestEmployeeDto(
+            nameOrEmail, employeeNumber, departmentName,
+            position, hireDateFrom, hireDateTo,
+            EmployeeStatus.valueOf(status.toUpperCase()), idAfter ,cursor,
+            size, sortField, sortDirection
         );
+
+        return employeeRepository.findEmployeeByCursor(request);
     }
 
     @Override
@@ -168,7 +172,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             department,
             updateRequest.position(),
             updateRequest.hireDate(),
-            EmployeeStatus.from(updateRequest.status()),
+            EmployeeStatus.valueOf(updateRequest.status()),
             binaryContent
         );
 
@@ -212,7 +216,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             from = calculateDefaultFrom(to, unit);
         }
 
-        List<Object[]> rawResult = employeeRepository.countActiveGroupedByUnit(from, to,
+        List<Object[]> rawResult = employeeRepository.countEmployeeTrend(from, to,
             timeUnit.name().toLowerCase());
 
         List<EmployeeTrendDto> trendList = new ArrayList<>();
@@ -251,7 +255,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         groupingKey = groupBy.equalsIgnoreCase("position") ? "position" : "department";
 
-        return employeeQueryRepository.findDistributionBy(groupingKey, employeeStatus);
+        return employeeRepository.findDistributionBy(groupingKey, employeeStatus);
     }
 
     @Override
@@ -265,14 +269,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new IllegalStateException("유효하지 않은 상태 값입니다: " + status);
         }
 
-        return employeeQueryRepository.employeeCountBy(employeeStatus, fromDate, toDate);
+        return employeeRepository.employeeCountBy(employeeStatus, fromDate, toDate);
     }
 
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
         return switch (unit.toLowerCase()) {
             case "day" -> to.minusDays(12);
             case "week" -> to.minusWeeks(12);
-            case "quarter" -> to.minusMonths(36); // 12 quarters
+            case "quarter" -> to.minusMonths(12);
             case "year" -> to.minusYears(12);
             default -> to.minusMonths(12);
         };
