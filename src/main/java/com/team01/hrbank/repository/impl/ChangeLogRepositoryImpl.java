@@ -112,10 +112,15 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
         // null 또는 asc일 경우 오름차순
         boolean asc = sortDirection == null || sortDirection.equalsIgnoreCase("asc");
 
+        // sortField가 null이면 기본값 "at"으로 대체
+        if(sortField == null || sortField.isBlank()){
+            sortField = "at";
+        }
+
         // sortField가 지원하지 않는 필드여도 동적 정렬이 가능한 것을 throw로 방지
         return switch (sortField) {
             case "ipAddress" -> asc ? qChangeLog.ipAddress.asc() : qChangeLog.ipAddress.desc();
-            case "updatedAt", "at", "", null -> asc ? qChangeLog.updatedAt.asc() : qChangeLog.updatedAt.desc();
+            case "updatedAt", "at", "" -> asc ? qChangeLog.updatedAt.asc() : qChangeLog.updatedAt.desc();
             default -> throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다: " + sortField);
         };
     }
