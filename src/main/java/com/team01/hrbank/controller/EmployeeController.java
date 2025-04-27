@@ -98,7 +98,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/stats/trend")
-    public ResponseEntity<List<EmployeeTrendDto>> getEmployeeTrend(
+    public ResponseEntity<List<EmployeeTrendDto>> findEmployeeTrend(
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(defaultValue = "month") String unit
@@ -107,7 +107,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/stats/distribution")
-    public ResponseEntity<List<EmployeeDistributionDto>> getEmployeeDistribution(
+    public ResponseEntity<List<EmployeeDistributionDto>> findEmployeeDistribution(
         @RequestParam(defaultValue = "department") String groupBy,
         @RequestParam(defaultValue = "ACTIVE") String status
     ) {
@@ -115,10 +115,10 @@ public class EmployeeController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long> getEmployeeCount(
+    public ResponseEntity<Long> findEmployeeCount(
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-        @RequestParam(defaultValue = "ACTIVE") String status
+        @RequestParam(required = false) String status
     ) {
         return ResponseEntity.ok(employeeService.employeeCount(status, fromDate, toDate));
     }

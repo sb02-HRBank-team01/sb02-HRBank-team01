@@ -217,7 +217,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (from == null) {
             from = calculateDefaultFrom(to, unit);
         }
-
         return employeeRepository.findEmployeeTrend(from, to, unit);
     }
 
@@ -245,14 +244,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public Long employeeCount(String status, LocalDate fromDate, LocalDate toDate) {
-        EmployeeStatus employeeStatus;
-
-        try {
-            employeeStatus = EmployeeStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("유효하지 않은 상태 값입니다: " + status);
+        EmployeeStatus employeeStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                employeeStatus = EmployeeStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException("유효하지 않은 상태 값입니다: " + status);
+            }
         }
-
         return employeeRepository.employeeCountBy(employeeStatus, fromDate, toDate);
     }
 
