@@ -131,10 +131,15 @@ public class BackupServiceImpl implements BackupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void validateBackupId(Long id) {
+        Backup backup = backUpRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("백업" + id));
 
+        if (backup.getStatus() != BackupStatus.COMPLETED) {
+            throw new IllegalStateException("백업" + backup.getStatus());
+        }
     }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void registerBackup(Backup backupInProgress) throws IOException {
         Long backupId = backupInProgress.getId();
