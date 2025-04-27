@@ -58,7 +58,7 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
         Files.createDirectories(filePath.getParent());
 
         if (Files.exists(filePath)) {
-            throw new DuplicateException("백업 CSV 파일이 이미 존재합니다.");
+            Files.delete(filePath); // 기존 파일 삭제 후 계속 진행
         }
 
         String[] headers = {"ID", "EMP_number", "Name", "Email", "dept_id", "HireDate",
@@ -207,4 +207,3 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
         }
     }
 }
-
