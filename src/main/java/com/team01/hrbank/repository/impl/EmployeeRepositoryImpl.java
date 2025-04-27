@@ -163,7 +163,12 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
         Long initialCount = queryFactory
             .select(employee.count())
             .from(employee)
-            .where(employee.hireDate.lt(from))
+            .where(
+                employee.hireDate.lt(from),
+                employee.status.ne(EmployeeStatus.RESIGNED)
+                    .or(employee.updatedAt.isNull())
+                    .or(employee.updatedAt.gt(from.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+            )
             .fetchOne();
 
         List<EmployeeTrendDto> trends = new ArrayList<>();
@@ -177,13 +182,17 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
         ));
 
         for (int i = 1; i < periods.size(); i++) {
-            LocalDate start = periods.get(i - 1);
             LocalDate end = periods.get(i);
 
             Long currentCount = queryFactory
                 .select(employee.count())
                 .from(employee)
-                .where(employee.hireDate.loe(end))
+                .where(
+                    employee.hireDate.loe(end),
+                    employee.status.ne(EmployeeStatus.RESIGNED)
+                        .or(employee.updatedAt.isNull())
+                        .or(employee.updatedAt.gt(end.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant()))
+                )
                 .fetchOne();
 
             Long change = currentCount - previousCount;
@@ -193,7 +202,7 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
                 end,
                 currentCount,
                 change,
-                Math.round(changeRate * 100) / 100.0 // 소수점 두 자리 반올림
+                Math.round(changeRate * 100) / 100.0
             ));
 
             previousCount = currentCount;
@@ -208,7 +217,7 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
             .select(employee.count())
             .from(employee)
             .where(
-                employee.status.eq(status),
+                status != null ? employee.status.eq(status) : null,
                 fromDate != null ? employee.hireDate.goe(fromDate) : null,
                 toDate != null ? employee.hireDate.loe(toDate) : null
             )
@@ -229,9 +238,8 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
         List<LocalDate> periods = new ArrayList<>();
         LocalDate current = from;
 
-        periods.add(from); // 첫 번째 데이터 포인트 기준
-
         while (!current.isAfter(to)) {
+            periods.add(current);
             current = switch (unit.toLowerCase()) {
                 case "day" -> current.plusDays(1);
                 case "week" -> current.plusWeeks(1);
@@ -239,10 +247,8 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
                 case "year" -> current.plusYears(1);
                 default -> current.plusMonths(1); // month 기본값
             };
-            if (!current.isAfter(to)) {
-                periods.add(current);
-            }
         }
+
         return periods;
     }
 
@@ -251,14 +257,11 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
             return null;
         }
 
-        switch (sortField) {
-            case "employeeNumber":
-                return buildEmployeeNumberCondition(cursor, sortDirection, idAfter);
-            case "hireDate":
-                return buildHireDateCondition(cursor, sortDirection, idAfter);
-            default:
-                return buildNameCondition(cursor, sortDirection, idAfter);
-        }
+      return switch (sortField) {
+        case "employeeNumber" -> buildEmployeeNumberCondition(cursor, sortDirection, idAfter);
+        case "hireDate" -> buildHireDateCondition(cursor, sortDirection, idAfter);
+        default -> buildNameCondition(cursor, sortDirection, idAfter);
+      };
     }
 
     private BooleanExpression buildEmployeeNumberCondition(String cursor, String sortDirection, Long idAfter) {
