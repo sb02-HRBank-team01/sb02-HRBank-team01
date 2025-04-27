@@ -23,7 +23,7 @@ import lombok.ToString;
 import lombok.AccessLevel;
 
 @Entity
-@Table(name = "backups")
+@Table(name = "back_ups")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = "empProfiles")
