@@ -33,31 +33,48 @@
 
 ---
 
+## 🖥️ 화면 구성
+
+| 대시보드_1 | 대시보드_2 |
+|----------|------------|
+| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+
+
+| 부서 관리 | 직원 관리 |
+|------------|------------|
+| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+
+| 수정 이력 | 데이터 백업 |
+|------------|------------|
+| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+
+---
+
 ## 💻 팀원별 구현 기능
 
 > 각 기능에 대한 이미지나 GIF는 아래에 첨부해주세요.
 
 ### ✅ 안재관  
-- (개발한 기능 요약)  
-![안재관 기능 이미지](첨부_이미지_URL)
+- (개발한 기능 간단 요약)  
+
 
 ---
 
 ### ✅ 양찬혁  
 - (개발한 기능 요약)  
-![양찬혁 기능 이미지](첨부_이미지_URL)
+
 
 ---
 
 ### ✅ 윤영로  
 - (개발한 기능 요약)  
-![윤영로 기능 이미지](첨부_이미지_URL)
+
 
 ---
 
 ### ✅ 한성태  
 - (개발한 기능 요약)  
-![한성태 기능 이미지](첨부_이미지_URL)
+
 
 ---
 
