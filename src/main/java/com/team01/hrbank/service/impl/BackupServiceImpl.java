@@ -46,7 +46,7 @@ public class BackupServiceImpl implements BackupService {
 
     @Transactional
     @Override
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "${spring.backup.schedule.time}")
     public void run() throws IOException {
         final String worker = "system";
         if (!needLog()) {
