@@ -7,20 +7,21 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(name = "change_log_details")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChangeLogDetail extends BaseEntity {
+public class ChangeLogDetail extends BaseUpdatableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "change_log_id", nullable = false)
     private ChangeLog changeLog;
 
-    @Column(nullable = false)
+    @Column(name = "property_name", nullable = false)
     private String propertyName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "before_value", columnDefinition = "TEXT")
     private String before;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "after_value", columnDefinition = "TEXT")
     private String after;
 
     public ChangeLogDetail(ChangeLog changeLog, String propertyName, String before, String after) {
