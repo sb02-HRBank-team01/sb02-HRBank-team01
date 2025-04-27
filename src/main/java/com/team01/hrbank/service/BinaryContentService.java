@@ -10,19 +10,12 @@ import java.util.List;
 
 public interface BinaryContentService {
 
-    @Transactional
-    BinaryContentDto upload(BinaryContentCreateRequest request);
-
-    List<BinaryContentDto> findAllByIdIn(List<Long> binaryContentIds);
 
     @Transactional(readOnly = true)
     BinaryContentDto find(Long binaryContentId);
 
-
     @Transactional
     void delete(Long binaryContentId);
 
-//
-//    @Transactional(readOnly = true)
-//    void streamProfileDownload(OutputStream outputStream) throws IOException;
+
 }

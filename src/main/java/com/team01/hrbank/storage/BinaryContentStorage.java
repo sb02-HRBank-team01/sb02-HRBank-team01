@@ -11,5 +11,4 @@ public interface BinaryContentStorage {
 
     InputStream get(Long id);
 
-    ResponseEntity<Resource> downloadResponse(BinaryContentDto dto);
 }

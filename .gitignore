@@ -5,6 +5,7 @@ application.yml
 .gradle/
 .idea/
 build/
+data/*
 uploads/
 images/
 *.log
