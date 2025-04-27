@@ -1,6 +1,6 @@
 # HR Bank - SB2기_1팀 협업 백엔드 프로젝트
 
-📌 [팀 협업 문서 바로가기](https://github.com/sb02-HRBank-team01/sb02-HRBank-team01/wiki)
+📌 [팀 협업 Wiki 문서 바로가기](https://github.com/sb02-HRBank-team01/sb02-HRBank-team01/wiki)
 
 ---
 
