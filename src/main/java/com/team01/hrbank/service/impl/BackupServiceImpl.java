@@ -245,7 +245,7 @@ public class BackupServiceImpl implements BackupService {
     public void validateBackupId(Long id) {
         Backup backup = findBackupByIdOrThrow(id);
         if (backup.getStatus() != BackupStatus.COMPLETED) {
-            throw new IllegalStateException("백업 ID %d가 완료되지 않았습니다.");
+            throw new IllegalStateException("백업이 완료되지 않았습니다.");
         }
     }
 
