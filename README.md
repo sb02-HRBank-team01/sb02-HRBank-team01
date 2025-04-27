@@ -1,11 +1,11 @@
 # HR Bank - SB2기_1팀 협업 백엔드 프로젝트
 
-📌 [팀 협업 Wiki 문서 바로가기](https://github.com/sb02-HRBank-team01/sb02-HRBank-team01/wiki)
+📎 [팀 협업 Wiki 문서 바로가기](https://github.com/sb02-HRBank-team01/sb02-HRBank-team01/wiki)
 
 ---
 
 ## 🌐 배포 주소
-**링크**: [https://www.codeit.kr/](https://www.codeit.kr/)  
+📎 [https://www.codeit.kr/](https://www.codeit.kr/)  
 
 ---
 
@@ -113,11 +113,11 @@
   ┗ README.md 
 </pre>
 
- 
-구현 홈페이지
-(개발한 홈페이지에 대한 링크 게시)
+--- 
 
-https://www.codeit.kr/
+## 📝 프로젝트 회고록
 
-프로젝트 회고록
-(제작한 발표자료 링크 혹은 첨부파일 첨부)
+- 프로젝트를 진행하며 느낀 점과 배운 점을 정리한 팀원별 회고 자료입니다.  
+- 아래 링크를 통해 회고 내용을 확인할 수 있습니다.
+
+📎 **[회고록 링크](회고록_링크_URL)**  
