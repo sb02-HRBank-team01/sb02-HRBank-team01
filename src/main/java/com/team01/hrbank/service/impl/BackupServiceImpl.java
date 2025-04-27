@@ -121,9 +121,9 @@ public class BackupServiceImpl implements BackupService {
     public void registerBackup(Backup backupInProgress) throws IOException, RuntimeException {
         Long backupId = backupInProgress.getId();
 
-        if (backupId != null && backupId % 2 == 0) {
-            throw new RuntimeException("짝수 ID 백업 강제 실패! ID: " + backupId);
-        }
+//        if (backupId != null && backupId % 2 == 0) {
+//            throw new RuntimeException("짝수 ID 백업 강제 실패! ID: " + backupId);
+//        }
 
         List<Employee> employees = employeeRepository.findAll();
         List<BinaryContent> profiles = employees.stream()
