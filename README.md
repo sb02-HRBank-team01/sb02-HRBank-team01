@@ -25,11 +25,20 @@
 기업의 인사 데이터를 효율적으로 관리하고, 부서 및 직원 정보의 등록, 수정, 삭제, 조회는 물론 직원 정보 수정 이력 기록, 다운로드 그리고 Spring Batch 기반의 자동화된 데이터 백업 기능을 제공하는 Spring 기반 백엔드 HR 관리 시스템입니다.
 또한 실시간 통계 데이터를 제공하는 대시보드 API를 통해 관리자가 전체 인사 현황을 직관적으로 파악할 수 있도록 지원합니다.
 
-- **진행 기간**: 2025.04.21 ~ 2025.04.29  
-- **기술 스택**:  
-  - **Backend**: Java, Spring Boot, Spring Data JPA, springdoc-openapi
-  - **Database**: PostgreSQL (Docker 기반) 
-  - **공통 협업 Tool**: Git & GitHub, Discord, Notion
+- **진행 기간**: 2025.04.21 ~ 2025.04.29
+
+--- 
+
+## 🛠️ 기술 스택
+### Backend
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"> <img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+<img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+
+### Database 
+<img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+
+### Collaboration Tools
+<img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white">
 
 ---
 
