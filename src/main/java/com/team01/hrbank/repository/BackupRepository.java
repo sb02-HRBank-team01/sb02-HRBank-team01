@@ -13,4 +13,6 @@ public interface BackupRepository extends JpaRepository<Backup,Long>, BackupCust
 
     //가장 최근에 시작된 특정 상태의 백업 이력 조회
     Optional<Backup> findTopByStatusOrderByStartedAtDesc(BackupStatus status);
-} 
+
+    Optional<Backup> findTopByStatusOrderByEndedAtDesc(BackupStatus status);
+}
