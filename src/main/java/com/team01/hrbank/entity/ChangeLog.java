@@ -11,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Table(name = "change_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 
 public class ChangeLog extends BaseUpdatableEntity {
