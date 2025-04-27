@@ -25,7 +25,7 @@ public class ChangeLogController {
     public CursorPageResponseChangeLogDto searchChangeLogs(
         // QueryString 방식
         @RequestParam(required = false) String employeeNumber,
-        @RequestParam(required = false) ChangeType type,
+        @RequestParam(required = false) String type,
         @RequestParam(required = false) String memo,
         @RequestParam(required = false) String ipAddress,
         @RequestParam(required = false)
@@ -38,9 +38,22 @@ public class ChangeLogController {
         @RequestParam(defaultValue = "desc") String sortDirection,
         @RequestParam(defaultValue = "10") int size
     ) {
+        // 한글 type을 Enum으로 변환
+        ChangeType changeType = null;
+        if (type != null) {
+            // 대소문자 무시하고 비교
+            // 한글 및 영어 모두 매핑되도록 함.
+            // String형태로 오는 것을 enum type으로 변환 필요
+            changeType = switch (type.toUpperCase()) {
+                case "생성", "CREATED" -> ChangeType.CREATED;
+                case "수정", "UPDATED" -> ChangeType.UPDATED;
+                case "삭제", "DELETED" -> ChangeType.DELETED;
+                default -> throw new IllegalArgumentException("지원하지 않는 유형입니다: " + type);
+            };
+        }
         return changeLogService.searchChangeLogs(
             employeeNumber,
-            type,
+            changeType,
             memo,
             ipAddress,
             atFrom,

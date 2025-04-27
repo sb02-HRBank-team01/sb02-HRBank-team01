@@ -1,5 +1,7 @@
 package com.team01.hrbank.repository.impl;
 
+import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
+
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -35,8 +37,12 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
         if (employeeNumber != null && !employeeNumber.isBlank()) {
             where.and(qChangeLog.employeeNumber.containsIgnoreCase(employeeNumber));
         }
+        // 비교를 위해 enum을 string으로 변환
         if (type != null) {
-            where.and(qChangeLog.type.eq(type));
+            where.and(
+                stringTemplate("cast({0} as string)", qChangeLog.type)
+                    .eq(type.name())
+            );
         }
         // 부분 검색이 가능
         // employeeNumber LIKE %xxx% 와 비슷
@@ -84,8 +90,12 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
         if (employeeNumber != null && !employeeNumber.isBlank()) {
             where.and(qChangeLog.employeeNumber.containsIgnoreCase(employeeNumber));
         }
+        // enum type을 string으로 변환하여 비교
         if (type != null) {
-            where.and(qChangeLog.type.eq(type));
+            where.and(
+                stringTemplate("cast({0} as string)", qChangeLog.type)
+                    .eq(type.name())
+            );
         }
         if (memo != null && !memo.isBlank()) {
             where.and(qChangeLog.memo.containsIgnoreCase(memo));
