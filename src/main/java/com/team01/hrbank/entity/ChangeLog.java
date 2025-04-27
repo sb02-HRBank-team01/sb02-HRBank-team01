@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -17,7 +19,8 @@ import java.util.List;
 public class ChangeLog extends BaseUpdatableEntity {
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
+    @Column(name = "type", nullable = false, columnDefinition = "change_type") // PostgreSQL enum 타입 명시
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private ChangeType type; // CREATED, UPDATED, DELETED
 
     @Column(name = "employee_number", nullable = false)
