@@ -20,7 +20,7 @@
 프로그래밍 교육 사이트의 **Spring 기반 백엔드 시스템 구축**  
 - **진행 기간**: 2025.04.21 ~ 2025.04.29  
 - **기술 스택**:  
-  - **Backend**: JAVA, Spring Boot, Spring Data JPA, springdoc-openapi
+  - **Backend**: Java, Spring Boot, Spring Data JPA, springdoc-openapi
   - **Database**: PostgreSQL (Docker 기반) 
   - **공통 협업 Tool**: Git & GitHub, Discord, Notion
 
