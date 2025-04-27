@@ -19,8 +19,8 @@ import org.hibernate.type.SqlTypes;
 public class ChangeLog extends BaseUpdatableEntity {
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, columnDefinition = "change_type") // PostgreSQL enum 타입 명시
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "type", nullable = false, columnDefinition = "change_type")
     private ChangeType type; // CREATED, UPDATED, DELETED
 
     @Column(name = "employee_number", nullable = false)
