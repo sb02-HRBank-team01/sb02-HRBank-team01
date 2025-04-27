@@ -74,20 +74,5 @@ public class BinaryContentStorageImpl implements BinaryContentStorage {
         return root.resolve(id.toString());
     }
 
-    @Override
-    public ResponseEntity<Resource> downloadResponse(BinaryContentDto dto) {
-        //파일 내용이 담긴 Resource 타입
-        Resource resource = new InputStreamResource(get(dto.id()));
-
-        String contentType = URLConnection.guessContentTypeFromName(resource.getFilename());
-        if (contentType == null) {
-            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-        }
-        //서비스를 거치지 않는 게 정보은닉
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "inline; filename=\"" + resource.getFilename() + "\"").body(resource);
-    }
-
 
 }
