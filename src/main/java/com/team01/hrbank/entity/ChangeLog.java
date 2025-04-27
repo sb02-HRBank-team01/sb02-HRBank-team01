@@ -20,13 +20,13 @@ public class ChangeLog extends BaseUpdatableEntity {
     @Column(name = "type", nullable = false)
     private ChangeType type; // CREATED, UPDATED, DELETED
 
-    @Column(name = "employeeNumber", nullable = false)
+    @Column(name = "employee_number", nullable = false)
     private String employeeNumber; // 사번
 
     @Column(name = "memo", length = 500)
     private String memo;
 
-    @Column(name = "ipAddress", nullable = false)
+    @Column(name = "ip_address", nullable = false)
     private String ipAddress;
 
     // `updatedAt`을 Swagger의 "at" 필드로 사용 (BaseUpdatableEntity에서 상속됨)
