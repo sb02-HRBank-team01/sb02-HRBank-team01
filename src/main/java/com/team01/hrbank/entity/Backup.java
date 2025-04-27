@@ -41,9 +41,9 @@ public class Backup extends BaseEntity {
     private Instant endedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "backup_files",
+    @JoinTable(name = "backups_files",
         joinColumns = @JoinColumn(name = "backups_id"),
-        inverseJoinColumns = @JoinColumn(name = "binary_content_id"))
+        inverseJoinColumns = @JoinColumn(name = "binary_contents_id"))
     private List<BinaryContent> empProfiles = new ArrayList<>();
 
     @Builder

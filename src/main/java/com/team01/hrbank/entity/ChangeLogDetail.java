@@ -18,10 +18,10 @@ public class ChangeLogDetail extends BaseUpdatableEntity {
     @Column(name = "property_name", nullable = false)
     private String propertyName;
 
-    @Column(name = "before_value", columnDefinition = "TEXT")
+    @Column(name = "before_value")
     private String before;
 
-    @Column(name = "after_value", columnDefinition = "TEXT")
+    @Column(name = "after_value")
     private String after;
 
     public ChangeLogDetail(ChangeLog changeLog, String propertyName, String before, String after) {
