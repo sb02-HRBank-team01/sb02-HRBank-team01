@@ -16,6 +16,7 @@ import com.team01.hrbank.enums.BackupStatus;
 import com.team01.hrbank.repository.custom.BackupCustomRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,22 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
     @Override
     public List<Backup> searchWithCursor(String worker, BackupStatus status, Instant startedAtFrom,
         Instant startedAtTo, CursorRequest cursorRequest) {
-        Long lastId =
-            cursorRequest.cursor() != null ? Long.parseLong(cursorRequest.cursor()) : null;
+
+        Long lastId = null;
+        if (cursorRequest.cursor() != null && !cursorRequest.cursor().isEmpty()) {
+            try {
+                byte[] decodedBytes = Base64.getDecoder().decode(cursorRequest.cursor());
+                String decodedJson = new String(decodedBytes, java.nio.charset.StandardCharsets.UTF_8);
+
+                String idStr = decodedJson.replaceAll("[^0-9]", "");
+                if (!idStr.isEmpty()) {
+                    lastId = Long.parseLong(idStr);
+                }
+            } catch (IllegalArgumentException e) {
+                lastId = null;
+            }
+        }
+
         int pageSize = cursorRequest.size();
         List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(cursorRequest.sortField(),
             cursorRequest.direction());
@@ -48,7 +63,7 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
         List<Long> ids = jpaQueryFactory.select(backup.id).from(backup)
             .where(buildWhereClause(worker, status, startedAtFrom, startedAtTo),
                 idBasedPagination(lastId, cursorRequest.direction()))
-            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).limit(pageSize + 1) // 있다면 +1
+            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).limit(pageSize + 1)
             .fetch();
 
         if (ids.isEmpty()) {
@@ -57,7 +72,7 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
 
         return jpaQueryFactory.selectDistinct(backup).from(backup)
             .leftJoin(backup.empProfiles, binaryContent).fetchJoin()
-            .where(backup.id.in(ids)) // IN 절로 ID 필터링
+            .where(backup.id.in(ids))
             .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).fetch();
     }
 

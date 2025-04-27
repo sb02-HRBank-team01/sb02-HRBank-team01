@@ -1,12 +1,8 @@
 package com.team01.hrbank.entity;
 
-
-
 import com.team01.hrbank.enums.BackupStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -21,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.AccessLevel;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "back_ups")
@@ -29,8 +27,8 @@ import lombok.AccessLevel;
 @ToString(exclude = "empProfiles")
 public class Backup extends BaseEntity {
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "backup_status_enum")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private BackupStatus status;
 
     @Column(name = "worker", nullable = false)
