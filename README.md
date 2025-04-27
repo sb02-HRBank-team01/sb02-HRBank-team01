@@ -8,7 +8,7 @@
 
 | 이름     | GitHub 링크            |
 |----------|------------------------|
-| 안재관   | [GitHub](https://github.com/kkwan99) |
+| 안재관   | [https://github.com/kkwan99](https://github.com/kkwan99) |
 | 양찬혁   | [GitHub](개인_GitHub_링크) |
 | 윤영로   | yryun00@gmail.com |
 | 한성태   | [GitHub](개인_GitHub_링크) |
