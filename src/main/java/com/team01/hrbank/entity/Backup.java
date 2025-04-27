@@ -27,7 +27,7 @@ import lombok.AccessLevel;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = "empProfiles")
-public class Backup extends BaseUpdatableEntity {
+public class Backup extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -49,10 +49,9 @@ public class Backup extends BaseUpdatableEntity {
     private List<BinaryContent> empProfiles = new ArrayList<>();
 
     @Builder
-    public Backup(Long id, Instant createdAt, Instant updatedAt, BackupStatus status, String worker, Instant startedAt, Instant endedAt, List<BinaryContent> employeeProfilePicturesAtBackup) {
+    public Backup(Long id, Instant createdAt, BackupStatus status, String worker, Instant startedAt, Instant endedAt, List<BinaryContent> employeeProfilePicturesAtBackup) {
         this.id = id;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.status = (status != null) ? status : BackupStatus.IN_PROGRESS;
         this.worker = worker;
         this.startedAt = startedAt;
