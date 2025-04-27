@@ -46,7 +46,7 @@ public class BackupServiceImpl implements BackupService {
 
     @Transactional
     @Override
-    @Scheduled(cron = "${backup.schedule.time}")
+    @Scheduled(cron = "*/10 * * * * *")
     public void run() throws IOException {
         final String worker = "system";
         if (!needLog()) {
@@ -63,8 +63,7 @@ public class BackupServiceImpl implements BackupService {
         final String worker = workerIp;
         Backup initialBackup = runBackup(worker);
         registerBackup(initialBackup);
-        Backup finalBackup = backUpRepository.findById(initialBackup.getId())
-            .orElseThrow(() -> new IllegalStateException("아이디를 찾을 수 없습니다."));
+        Backup finalBackup = findBackupByIdOrThrow(initialBackup.getId());
         return backUpMapper.toDto(finalBackup);
     }
 
@@ -133,50 +132,72 @@ public class BackupServiceImpl implements BackupService {
     @Override
     @Transactional(readOnly = true)
     public void validateBackupId(Long id) {
-        Backup backup = backUpRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("백업" + id));
+        Backup backup = findBackupByIdOrThrow(id);
 
         if (backup.getStatus() != BackupStatus.COMPLETED) {
             throw new IllegalStateException("백업" + backup.getStatus());
         }
     }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void registerBackup(Backup backupInProgress) throws IOException {
         Long backupId = backupInProgress.getId();
 
-        //n+1문제
-        //fetch join 사용 시 해결 될 거로 보임 (즉시로딩)
-        List<Employee> employees = employeeRepository.findAll();
-        List<BinaryContent> profiles = employees.stream()
-            .map(Employee::getProfile)
-            .filter(Objects::nonNull)
-            .distinct()
-            .collect(Collectors.toList());
+        List<Employee> employees;
+        List<BinaryContent> profiles;
+        try {
+            employees = employeeRepository.findAll();
+            profiles = employees.stream()
+                .map(Employee::getProfile)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            handleBackupFailure(backupId, e);
+            throw new IOException("백업 실패 처리됨");
+        }
 
-
-        Backup managed = backUpRepository.findById(backupId)
-            .orElseThrow(() -> new EntityNotFoundException("백업 없음: " + backupId));
+        Backup managed = findBackupByIdOrThrow(backupId);
         managed.setProFileBackup(profiles);
         backUpRepository.save(managed);
 
-
         try (Stream<Employee> stream = employees.stream()) {
             csvBackupStorage.saveCsvFromStream(backupId, stream);
+        } catch (Exception e) {
+            handleBackupFailure(backupId, e);
+            throw new IOException("백업 실패 처리됨", e);
         }
 
-        Backup toComplete = backUpRepository.findById(backupId)
-            .orElseThrow(() -> new EntityNotFoundException("백업 없음: " + backupId));
+        Backup toComplete = findBackupByIdOrThrow(backupId);
         toComplete.complete(Instant.now());
         backUpRepository.save(toComplete);
     }
 
+    private void handleBackupFailure(Long backupId, Exception cause) {
+        try {
+            csvBackupStorage.saveErrorLog(backupId, cause);
+        } catch (Exception logEx) {
+        }
+
+        try {
+            Backup toFail = backUpRepository.findById(backupId)
+                .orElseThrow(() -> {
+                    return new EntityNotFoundException("백업" + backupId);
+                });
+
+            if (toFail.getStatus() != BackupStatus.FAILED) {
+                toFail.fail(Instant.now());
+                backUpRepository.save(toFail);
+            }
+        } catch (Exception dbEx) {
+        }
+    }
 
     private boolean needLog() {
         final String batchWorker = "system";
-        // 가장 최근에 완료된 작업 이후 수정내역이 있다면
         Optional<Backup> lastCompletedBatch = backUpRepository.findTopByWorkerAndStatusOrderByEndedAtDesc(
             batchWorker, BackupStatus.COMPLETED);
-        //없다면 무조건 한 개는 생성
+
         if (lastCompletedBatch.isEmpty()) {
             return true;
         }
@@ -186,7 +207,8 @@ public class BackupServiceImpl implements BackupService {
             throw new RuntimeException("서버 에러");
         }
 
-        return changeLogRepository.existsByCreatedAtAfter(lastBatchEndTime);
+        boolean changesExist = changeLogRepository.existsByCreatedAtAfter(lastBatchEndTime);
+        return changesExist;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -202,6 +224,7 @@ public class BackupServiceImpl implements BackupService {
         Backup skippedBackup = Backup.builder().worker("system").startedAt(Instant.now())
             .endedAt(Instant.now()).status(BackupStatus.SKIPPED).build();
         backUpRepository.save(skippedBackup);
+
     }
 
 
@@ -227,5 +250,10 @@ public class BackupServiceImpl implements BackupService {
         }
         String jsonCursor = String.format("{\"id\":%d}", lastId);
         return Base64.getEncoder().encodeToString(jsonCursor.getBytes());
+    }
+
+    private Backup findBackupByIdOrThrow(Long backupId) {
+        return backUpRepository.findById(backupId)
+            .orElseThrow(() -> new EntityNotFoundException("요청한 백업 ID를 찾을 수 없습니다: " + backupId));
     }
 }
