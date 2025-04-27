@@ -1,6 +1,7 @@
 package com.team01.hrbank.controller.advice;
 
 import com.team01.hrbank.dto.error.ErrorResponse;
+import com.team01.hrbank.exception.BackupFailedException;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.exception.InvalidSortParameterException;
@@ -130,5 +131,20 @@ public class GlobalExceptionHandler {
             ex.getName() +  " : " + Objects.requireNonNull(ex.getValue())
         );
         return ResponseEntity.badRequest().body(error);
+    }
+    @ExceptionHandler(BackupFailedException.class)
+    public ResponseEntity<ErrorResponse> handleBackupFailed(BackupFailedException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+            Instant.now(),
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "백업 작업 실패",
+            ex.getMessage()
+
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(error);
     }
 }
