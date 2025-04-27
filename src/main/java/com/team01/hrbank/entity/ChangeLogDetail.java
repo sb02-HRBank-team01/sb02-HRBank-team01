@@ -1,6 +1,11 @@
 package com.team01.hrbank.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +20,7 @@ public class ChangeLogDetail extends BaseUpdatableEntity {
     @JoinColumn(name = "change_log_id", nullable = false)
     private ChangeLog changeLog;
 
-    @Column(nullable = false)
+    @Column(name = "property_name", nullable = false)
     private String propertyName;
 
     @Column(name = "before_value")
