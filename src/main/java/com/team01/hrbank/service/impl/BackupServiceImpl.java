@@ -7,6 +7,7 @@ import com.team01.hrbank.entity.Backup;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.enums.BackupStatus;
+import com.team01.hrbank.exception.BackupFailedException;
 import com.team01.hrbank.mapper.BackupMapper;
 import com.team01.hrbank.repository.BackupRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
@@ -23,9 +24,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -38,64 +43,90 @@ public class BackupServiceImpl implements BackupService {
     private final CsvBackupStorage csvBackupStorage;
     private final BackupMapper backUpMapper;
     private final ChangeLogRepository changeLogRepository;
+    private final ApplicationContext applicationContext;
 
-    @Transactional
+    private BackupServiceImpl getSelf() {
+        return applicationContext.getBean(BackupServiceImpl.class);
+    }
+
     @Override
     @Scheduled(cron = "${spring.backup.schedule.time}")
     public void run() {
+        Backup runBackup = null;
         try {
             final String worker = "system";
             if (!needLog()) {
-                skippedBackup();
+                getSelf().skippedBackup();
                 return;
             }
-            Backup runBackup = startBackup(worker);
-            registerBackup(runBackup);
-        } catch (IOException e) {
-            throw new RuntimeException("백업 실행 중 IO 오류 발생", e);
+            runBackup = getSelf().startBackup(worker);
+            getSelf().registerBackup(runBackup);
+        } catch (Exception e) {
+            if (runBackup != null) {
+                try {
+                    getSelf().handleBackupFailure(runBackup.getId(), e);
+                } catch (Exception failureHandlerEx) {
+
+                    failureHandlerEx.printStackTrace();
+                }
+            } else {
+                e.printStackTrace();
+            }
         }
     }
 
     @Transactional
     @Override
     public BackupDto triggerManualBackup(String workerIp) {
+        Backup initialBackup = null;
         try {
             final String worker = workerIp;
-            Backup initialBackup = startBackup(worker);
-            registerBackup(initialBackup);
+            initialBackup = getSelf().startBackup(worker);
+            getSelf().registerBackup(initialBackup);
+
             Backup finalBackup = findBackupByIdOrThrow(initialBackup.getId());
             return backUpMapper.toDto(finalBackup);
-        } catch (IOException e) {
-            throw new RuntimeException("수동 백업 실행 중 IO 오류 발생", e);
+
+        } catch (Exception e) {
+            if (initialBackup != null) {
+                Long failedBackupId = initialBackup.getId();
+                try {
+                    getSelf().handleBackupFailure(failedBackupId, e);
+                } catch (Exception failureHandlerEx) {
+                    failureHandlerEx.printStackTrace();
+                }
+
+                throw new BackupFailedException("수동 백업 실패. ID: " + failedBackupId,e);
+
+
+            } else {
+                // initialBackup이 null이면 백업 시작 자체에 실패한 경우
+                throw new RuntimeException("백업 시작 중 오류 발생, 백업 ID 없음", e);
+            }
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected Backup startBackup(String worker) {
+    public Backup startBackup(String worker) {
         Backup newBackup = Backup.builder()
             .worker(worker)
             .startedAt(Instant.now())
             .status(BackupStatus.IN_PROGRESS)
             .build();
-        return backUpRepository.save(newBackup);
+        Backup saved = backUpRepository.save(newBackup);
+        return saved;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void registerBackup(Backup backupInProgress) throws IOException {
+    public void registerBackup(Backup backupInProgress) throws IOException, RuntimeException {
         Long backupId = backupInProgress.getId();
 
-//        // 테스트용: 실패 코드 - 백업 ID가 짝수인 경우 강제 실패
-//        if (backupId != null && backupId % 2 == 0) {
-//            handleBackupFailure(backupId,
-//                new RuntimeException("registerBackup에서 짝수 ID 백업 강제 실패! Backup ID: " + backupId));
-//            throw new RuntimeException("짝수 ID 백업 강제 실패!");
-//        }
-        
-        List<Employee> employees;
-        List<BinaryContent> profiles;
-        
-        employees = employeeRepository.findAll();
-        profiles = employees.stream()
+        if (backupId != null && backupId % 2 == 0) {
+            throw new RuntimeException("짝수 ID 백업 강제 실패! ID: " + backupId);
+        }
+
+        List<Employee> employees = employeeRepository.findAll();
+        List<BinaryContent> profiles = employees.stream()
             .map(Employee::getProfile)
             .filter(Objects::nonNull)
             .distinct()
@@ -107,6 +138,8 @@ public class BackupServiceImpl implements BackupService {
 
         try (Stream<Employee> stream = employees.stream()) {
             csvBackupStorage.saveCsvFromStream(backupId, stream);
+        } catch (IOException | RuntimeException e) {
+            throw e;
         }
 
         Backup toComplete = findBackupByIdOrThrow(backupId);
@@ -117,23 +150,36 @@ public class BackupServiceImpl implements BackupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void handleBackupFailure(Long backupId, Exception cause) {
+    public void handleBackupFailure(Long backupId, Exception failureCause) {
+        try {
+            cleanupBackupFiles(backupId, failureCause);
+
+            Backup backup = backUpRepository.findById(backupId)
+                .orElseThrow(() -> new EntityNotFoundException("실패 처리 중 백업 ID를 찾을 수 없습니다"));
+
+            if (backup.getStatus() != BackupStatus.FAILED) {
+                backup.fail(Instant.now());
+                backUpRepository.saveAndFlush(backup);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("백업 실패 처리 중 오류 발생");
+        }
+    }
+
+    private void cleanupBackupFiles(Long backupId, Exception failureCause) {
+        try {
+            csvBackupStorage.saveErrorLog(backupId, failureCause);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try {
             csvBackupStorage.deleteCsvFile(backupId);
         } catch (IOException e) {
-            throw new RuntimeException("CSV 파일 삭제 실패", e);
+            e.printStackTrace();
         }
-        
-        try {
-            csvBackupStorage.saveErrorLog(backupId, cause);
-        } catch (IOException e) {
-            throw new RuntimeException("오류 로그 저장 실패", e);
-        }
-        
-        Backup toFail = findBackupByIdOrThrow(backupId);
-        toFail.fail(Instant.now());
-        backUpRepository.saveAndFlush(toFail);
     }
+
 
     @Transactional(readOnly = true)
     @Override
@@ -181,8 +227,9 @@ public class BackupServiceImpl implements BackupService {
         Backup backup = findBackupByIdOrThrow(id);
 
         if (backup.getStatus() != BackupStatus.COMPLETED) {
-            throw new IllegalStateException("백업이 완료되지 않음.");
-
+            throw new IllegalStateException(String.format(
+                "백업 ID %d가 완료되지 않았습니다. 현재 상태: %s", id, backup.getStatus()
+            ));
         }
     }
 
@@ -205,7 +252,7 @@ public class BackupServiceImpl implements BackupService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void skippedBackup() {
+    public void skippedBackup() {
         Instant now = Instant.now();
         Backup skippedBackup = Backup.builder()
             .worker("system")
