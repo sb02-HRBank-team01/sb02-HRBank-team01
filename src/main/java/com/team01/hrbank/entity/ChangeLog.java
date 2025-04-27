@@ -16,7 +16,7 @@ import java.util.List;
 public class ChangeLog extends BaseUpdatableEntity {
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private ChangeType type; // CREATED, UPDATED, DELETED
 
     @Column(nullable = false)
