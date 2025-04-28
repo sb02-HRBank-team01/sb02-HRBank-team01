@@ -46,16 +46,16 @@
 
 | 대시보드_1 | 대시보드_2 |
 |----------|------------|
-| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+| <img width="1490" alt="스크린샷 2025-04-29 오전 1 08 46" src="https://github.com/user-attachments/assets/b58b40cf-a71c-44b2-9f12-4c67af206815" /> | <img width="1490" alt="스크린샷 2025-04-29 오전 1 11 58" src="https://github.com/user-attachments/assets/0f86ab62-704f-454e-b61c-a3be6d83f9e6" /> |
 
 
 | 부서 관리 | 직원 관리 |
 |------------|------------|
-| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+| <img width="1490" alt="스크린샷 2025-04-29 오전 1 17 31" src="https://github.com/user-attachments/assets/d4c22f54-5734-426b-89b6-6206dd4dd07d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
 
 | 수정 이력 | 데이터 백업 |
 |------------|------------|
-| <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+| <img width="1490" alt="스크린샷 2025-04-29 오전 1 15 47" src="https://github.com/user-attachments/assets/b09d3194-6764-4d1c-b428-f24aeb3004ca" /> | <img width="1490" alt="스크린샷 2025-04-29 오전 1 16 05" src="https://github.com/user-attachments/assets/2f33bd12-0952-481c-80fb-deacbe71e793" /> |
 
 ---
 
