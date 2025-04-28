@@ -16,9 +16,9 @@
 -- DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED'); END IF; END $$;
 
 -- 또는 타입 직접 생성 (주석 처리된 조건문 대신 사용)
-CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
-CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
-CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
+--CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
+--CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
+--CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
 
 
 -- 테이블 생성
