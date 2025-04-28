@@ -33,6 +33,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
         if (employeeNumber != null && !employeeNumber.isBlank()) {
             where.and(qChangeLog.employeeNumber.containsIgnoreCase(employeeNumber));
         }
+
         // PostgreSQl에서 enum != varchar 변환 후 비교 필요
         if (type != null) {
             where.and(
@@ -52,6 +53,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
         if (atTo != null) {
             where.and(qChangeLog.updatedAt.loe(atTo));
         }
+
         // 커서 기반 페이지네이션을 위해 필요
         if (idAfter != null) {
             if ("desc".equalsIgnoreCase(sortDirection)) {
