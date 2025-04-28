@@ -11,12 +11,12 @@ import com.team01.hrbank.mapper.ChangeLogMapper;
 import com.team01.hrbank.repository.ChangeLogDetailRepository;
 import com.team01.hrbank.repository.ChangeLogRepository;
 import com.team01.hrbank.service.ChangeLogService;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 // 직원의 정보가 변경되었을 때, 어떤 필드가 어떻게 바뀌었는지를 ChangeLog, ChangeLogDetail 테이블에 기록
 @Service
