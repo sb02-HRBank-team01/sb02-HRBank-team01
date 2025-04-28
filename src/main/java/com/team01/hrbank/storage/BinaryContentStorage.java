@@ -1,9 +1,6 @@
 package com.team01.hrbank.storage;
 
-import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
 import java.io.InputStream;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 
 public interface BinaryContentStorage {
 

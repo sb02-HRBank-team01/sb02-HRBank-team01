@@ -45,7 +45,8 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
         if (cursorRequest.cursor() != null && !cursorRequest.cursor().isEmpty()) {
             try {
                 byte[] decodedBytes = Base64.getDecoder().decode(cursorRequest.cursor());
-                String decodedJson = new String(decodedBytes, java.nio.charset.StandardCharsets.UTF_8);
+                String decodedJson = new String(decodedBytes,
+                    java.nio.charset.StandardCharsets.UTF_8);
 
                 String idStr = decodedJson.replaceAll("[^0-9]", "");
                 if (!idStr.isEmpty()) {
@@ -53,6 +54,7 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
                 }
             } catch (IllegalArgumentException e) {
                 lastId = null;
+                e.printStackTrace();
             }
         }
 
@@ -63,20 +65,18 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
         List<Long> ids = jpaQueryFactory.select(backup.id).from(backup)
             .where(buildWhereClause(worker, status, startedAtFrom, startedAtTo),
                 idBasedPagination(lastId, cursorRequest.direction()))
-            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).limit(pageSize + 1)
-            .fetch();
+            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).limit(pageSize + 1).fetch();
 
         if (ids.isEmpty()) {
             return new ArrayList<>();
         }
 
         return jpaQueryFactory.selectDistinct(backup).from(backup)
-            .leftJoin(backup.empProfiles, binaryContent).fetchJoin()
-            .where(backup.id.in(ids))
+            .leftJoin(backup.empProfiles, binaryContent).fetchJoin().where(backup.id.in(ids))
             .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0])).fetch();
     }
 
-    //동적 쿼리 사용 (여러 조건을 하나로 묶음)
+    // 동적 쿼리 사용 (여러 조건을 하나로 묶음)
     private Predicate buildWhereClause(String worker, BackupStatus status, Instant from,
         Instant to) {
 
@@ -103,14 +103,11 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
         if (lastId == null) {
             return null;
         }
-        //                                     내림차순일 경우<last                오름차순   >last
         return direction == Sort.Direction.DESC ? backup.id.lt(lastId) : backup.id.gt(lastId);
     }
-        //oreSpecifier<-정렬 조건 표현 (정렬순서,경로)
-    private List<OrderSpecifier<?>> getOrderSpecifiers(
-        String sortField,
-        Sort.Direction direction
-    ) {
+
+    // oreSpecifier<-정렬 조건 표현 (정렬순서,경로)
+    private List<OrderSpecifier<?>> getOrderSpecifiers(String sortField, Sort.Direction direction) {
 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
 
@@ -125,10 +122,8 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
 
         String validatedSortField;
 
-        if (StringUtils.hasText(sortField)
-            && (sortField.equalsIgnoreCase("startedAt")
-            || sortField.equalsIgnoreCase("endedAt"))
-        ) {
+        if (StringUtils.hasText(sortField) && (sortField.equalsIgnoreCase("startedAt")
+            || sortField.equalsIgnoreCase("endedAt"))) {
             validatedSortField = sortField;
         } else {
             validatedSortField = "startedAt";
@@ -137,11 +132,7 @@ public class BackupRepositoryImpl implements BackupCustomRepository {
         PathBuilder<Backup> backupPath = new PathBuilder<>(Backup.class, "backup");
 
         orders.add(
-            new OrderSpecifier<>(
-                dslOrder,
-                backupPath.get(validatedSortField, Comparable.class)
-            )
-        );
+            new OrderSpecifier<>(dslOrder, backupPath.get(validatedSortField, Comparable.class)));
 
         return orders;
     }
