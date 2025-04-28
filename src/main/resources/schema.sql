@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS employees
     updated_at       TIMESTAMPTZ
 );
 
-CREATE TABLE back_ups
+CREATE TABLE IF NOT EXISTS back_ups
 (
     id         SERIAL PRIMARY KEY,
     worker     VARCHAR(255)       NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE back_ups
     created_at TIMESTAMPTZ        NOT NULL
 );
 
-CREATE TABLE backups_files
+CREATE TABLE IF NOT EXISTS backups_files
 (
     backups_id         BIGINT      NOT NULL REFERENCES back_ups (id) on Delete Cascade,
     binary_contents_id BIGINT      NOT NULL REFERENCES binary_contents (id) on Delete Cascade,
@@ -110,7 +110,6 @@ CREATE TABLE IF NOT EXISTS change_log_details
     created_at    TIMESTAMPTZ  NOT NULL,
     updated_at    TIMESTAMPTZ  NOT NULL
 );
-
 
 INSERT INTO departments (name, description, foundation_date, created_at, updated_at)
 VALUES ('개발팀', '소프트웨어 개발 부서', '2022-01-01', now(), now()),
