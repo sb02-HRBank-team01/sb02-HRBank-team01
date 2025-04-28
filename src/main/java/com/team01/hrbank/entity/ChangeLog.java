@@ -30,7 +30,7 @@ public class ChangeLog extends BaseUpdatableEntity {
     private ChangeType type; // CREATED, UPDATED, DELETED
 
     @Column(name = "employee_number", nullable = false)
-    private String employeeNumber; // 사번
+    private String employeeNumber;
 
     @Column(name = "memo", length = 500)
     private String memo;
@@ -46,11 +46,6 @@ public class ChangeLog extends BaseUpdatableEntity {
         this.employeeNumber = employeeNumber;
         this.memo = memo;
         this.ipAddress = ipAddress;
-    }
-
-    public void addDetail(ChangeLogDetail detail) {
-        this.details.add(detail);
-        detail.setChangeLog(this);
     }
 
     public Instant getUpdatedAt() {

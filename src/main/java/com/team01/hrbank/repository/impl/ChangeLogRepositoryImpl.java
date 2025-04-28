@@ -61,7 +61,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogQueryRepository {
             }
         }
 
-        // 프론트에서 오는 요청에 따라 asc, desc 모두 정렬 가능하다.
+        // 프론트에서 오는 요청에 따라 asc, desc 모두 정렬 가능
         OrderSpecifier<?> order = buildOrderSpecifier(sortField, sortDirection);
 
         return queryFactory
