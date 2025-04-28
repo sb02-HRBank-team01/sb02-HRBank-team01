@@ -5,7 +5,7 @@
 ---
 
 ## 🌐 배포 주소
-📎 [https://www.codeit.kr/](https://www.codeit.kr/)  
+📎 [sb02-hrbank-team01-production.up.railway.app](sb02-hrbank-team01-production.up.railway.app)  
 
 ---
 
