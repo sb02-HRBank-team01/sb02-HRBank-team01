@@ -8,30 +8,30 @@
 -- DROP TYPE IF EXISTS change_type CASCADE;
 
 
--- 조건문 추가
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_status') THEN
-CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
-END IF;
-END
-$$;
-
-DO $$
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'backup_status_enum') THEN
-            CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
-        END IF;
-    END
-$$;
-
-DO $$
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN
-            CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
-        END IF;
-    END
-$$;
+-- -- 조건문 추가
+-- DO $$
+-- BEGIN
+--     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_status') THEN
+-- CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
+-- END IF;
+-- END
+-- $$;
+--
+-- DO $$
+--     BEGIN
+--         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'backup_status_enum') THEN
+--             CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
+--         END IF;
+--     END
+-- $$;
+--
+-- DO $$
+--     BEGIN
+--         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN
+--             CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
+--         END IF;
+--     END
+-- $$;
 
 -- 조건문 삭제 상태
 -- CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
@@ -148,4 +148,3 @@ SELECT '직원_' || gs                                     AS name,
        CURRENT_TIMESTAMP                               AS created_at,
        CURRENT_TIMESTAMP                               AS updated_at
 FROM generate_series(1, 100) AS gs;
-
