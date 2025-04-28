@@ -40,12 +40,7 @@ CREATE TABLE IF NOT EXISTS binary_contents
     content_type VARCHAR(100) NOT NULL,
     created_at   TIMESTAMPTZ  NOT NULL
     );
-
-DO $$
-BEGIN
-    -- 시퀀스 시작 값을 1억으로 설정
-ALTER SEQUENCE binary_contents_id_seq RESTART WITH 100000000; -- 1억으로 변경
-END $$;
+ALTER SEQUENCE binary_contents_id_seq RESTART WITH 100000000; --수정
 
 
 
