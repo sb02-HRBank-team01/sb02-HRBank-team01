@@ -68,6 +68,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee(
             employeeCreateRequest.name(),
             employeeCreateRequest.email(),
+            generateEmployeeNumber(),
             department,
             employeeCreateRequest.position(),
             employeeCreateRequest.hireDate(),
@@ -247,6 +248,16 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
         return employeeRepository.employeeCountBy(employeeStatus, fromDate, toDate);
+    }
+
+    private String generateEmployeeNumber() {
+        Employee lastEmployee = employeeRepository.findTopByOrderByEmployeeNumberDesc().orElse(null);
+
+        int newEmployeeNumber = (lastEmployee != null)
+            ? Integer.parseInt(lastEmployee.getEmployeeNumber().substring(3)) + 1
+            : 1; // 첫 번째 직원이면 EMP00001 부여
+
+        return String.format("EMP%05d", newEmployeeNumber);
     }
 
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {

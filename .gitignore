@@ -12,7 +12,6 @@ uploads/
 !**/src/test/**/build/
 README.md
 src/main/generated
-/images
 
 ### STS ###
 .apt_generated

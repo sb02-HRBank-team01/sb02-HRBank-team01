@@ -12,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, EmployeeQueryRepository {
 
+    Optional<Employee> findTopByOrderByEmployeeNumberDesc();
+
     boolean existsByEmail(String email);
 
     boolean existsByDepartmentId(Long departmentId);

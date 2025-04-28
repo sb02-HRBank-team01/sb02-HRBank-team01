@@ -3,6 +3,8 @@
 -- DROP TABLE IF EXISTS employees CASCADE;
 -- DROP TABLE IF EXISTS departments CASCADE;
 -- DROP TABLE IF EXISTS binary_contents CASCADE;
+-- DROP TABLE IF EXISTS change_logs CASCADE;
+-- DROP TABLE IF EXISTS change_log_details CASCADE;
 -- DROP TYPE IF EXISTS employee_status;
 -- DROP TYPE IF EXISTS backup_status_enum;
 -- DROP TYPE IF EXISTS change_type CASCADE;
