@@ -1,3 +1,4 @@
+-- 기존 테이블 및 타입 삭제 (필요한 경우 주석 해제)
 -- DROP TABLE IF EXISTS backups_files CASCADE;
 -- DROP TABLE IF EXISTS back_ups CASCADE;
 -- DROP TABLE IF EXISTS employees CASCADE;
@@ -9,55 +10,46 @@
 -- DROP TYPE IF EXISTS backup_status_enum;
 -- DROP TYPE IF EXISTS change_type CASCADE;
 
+-- 타입 생성 (이미 존재하면 생성하지 않음 - 조건문 사용 또는 직접 실행)
+-- DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_status') THEN CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED'); END IF; END $$;
+-- DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'backup_status_enum') THEN CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED'); END IF; END $$;
+-- DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED'); END IF; END $$;
 
--- -- 조건문 추가
--- DO $$
--- BEGIN
---     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_status') THEN
--- CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
--- END IF;
--- END
--- $$;
---
--- DO $$
---     BEGIN
---         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'backup_status_enum') THEN
---             CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
---         END IF;
---     END
--- $$;
---
--- DO $$
---     BEGIN
---         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN
---             CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
---         END IF;
---     END
--- $$;
+-- 또는 타입 직접 생성 (주석 처리된 조건문 대신 사용)
+CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
+CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
+CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
 
--- 조건문 삭제 상태
--- CREATE TYPE employee_status AS ENUM ('ACTIVE', 'ON_LEAVE', 'RESIGNED');
--- CREATE TYPE backup_status_enum AS ENUM ('COMPLETED', 'FAILED', 'IN_PROGRESS', 'SKIPPED');
--- CREATE TYPE change_type AS ENUM ('CREATED', 'UPDATED', 'DELETED');
 
+-- 테이블 생성
 CREATE TABLE IF NOT EXISTS departments
 (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(100) NOT NULL UNIQUE,
     description     TEXT         NOT NULL,
     foundation_date TIMESTAMPTZ  NOT NULL,
-    created_at      TIMESTAMPTZ  NOT NULL,
+    created_at      TIMESTAMPTZ  NOT NULL, -- 기본값 없음
     updated_at      TIMESTAMPTZ
-);
+    );
 
 CREATE TABLE IF NOT EXISTS binary_contents
 (
-    id           SERIAL PRIMARY KEY,
+    -- *** 1. ID 타입을 BIGSERIAL로 변경 ***
+    id           BIGSERIAL PRIMARY KEY,
     file_name    VARCHAR(100) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
-    created_at   TIMESTAMPTZ  NOT NULL
-);
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT now()
+    );
+
+DO $$
+BEGIN
+    -- 시퀀스 존재 여부 확인 후 실행
+    IF EXISTS (SELECT 1 FROM information_schema.sequences WHERE sequence_name = 'binary_contents_id_seq') THEN
+ALTER SEQUENCE binary_contents_id_seq RESTART WITH 1000000000; --여기 수정
+END IF;
+END $$;
+
 
 CREATE TABLE IF NOT EXISTS employees
 (
@@ -72,7 +64,7 @@ CREATE TABLE IF NOT EXISTS employees
     profile_image_id BIGINT REFERENCES binary_contents (id),
     created_at       TIMESTAMPTZ     NOT NULL,
     updated_at       TIMESTAMPTZ
-);
+    );
 
 CREATE TABLE IF NOT EXISTS back_ups
 (
@@ -81,15 +73,16 @@ CREATE TABLE IF NOT EXISTS back_ups
     status     backup_status_enum NOT NULL,
     started_at TIMESTAMP          NOT NULL,
     ended_at   TIMESTAMP,
-    created_at TIMESTAMPTZ        NOT NULL
-);
+    created_at TIMESTAMPTZ        NOT NULL DEFAULT now() ----여기수정
+    );
 
 CREATE TABLE IF NOT EXISTS backups_files
 (
     backups_id         BIGINT      NOT NULL REFERENCES back_ups (id) on Delete Cascade,
+
     binary_contents_id BIGINT      NOT NULL REFERENCES binary_contents (id) on Delete Cascade,
-    created_at         TIMESTAMPTZ NOT NULL
-);
+    created_at         TIMESTAMPTZ NOT NULL -- 기본값 없음
+    );
 
 CREATE TABLE IF NOT EXISTS change_logs
 (
@@ -98,9 +91,9 @@ CREATE TABLE IF NOT EXISTS change_logs
     employee_number VARCHAR(100) NOT NULL,
     memo            TEXT,
     ip_address      VARCHAR(45)  NOT NULL,
-    created_at      TIMESTAMPTZ  NOT NULL,
+    created_at      TIMESTAMPTZ  NOT NULL, -- 기본값 없음
     updated_at      TIMESTAMPTZ  NOT NULL
-);
+    );
 
 CREATE TABLE IF NOT EXISTS change_log_details
 (
@@ -109,9 +102,11 @@ CREATE TABLE IF NOT EXISTS change_log_details
     property_name VARCHAR(255) NOT NULL,
     before_value  TEXT,
     after_value   TEXT,
-    created_at    TIMESTAMPTZ  NOT NULL,
+    created_at    TIMESTAMPTZ  NOT NULL, -- 기본값 없음
     updated_at    TIMESTAMPTZ  NOT NULL
-);
+    );
+
+
 
 -- INSERT INTO departments (name, description, foundation_date, created_at, updated_at)
 -- VALUES ('개발팀', '소프트웨어 개발 부서', '2022-01-01', now(), now()),
