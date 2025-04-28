@@ -14,7 +14,7 @@
 | 이름     | GitHub 링크 |
 |----------|--|
 | 안재관   | [https://github.com/kkwan99](https://github.com/kkwan99) |
-| 양찬혁   | [GitHub](개인_GitHub_링크) |
+| 양찬혁   | [https://github.com/20184415](https://github.com/20184415) |
 | 윤영로   | [https://github.com/yun0ro](https://github.com/yun0ro) |
 | 한성태   | [https://github.com/Seong-taeHan](https://github.com/Seong-taeHan) |
 
@@ -96,6 +96,7 @@
     - 이력 등록 기능 구현
     - 이력 목록 조회 시 **QueryDSL** 기반 **동적 검색**, **정렬**, **커서 기반 페이지네이션** 처리
     - 이력 상세 변경 내용 조회 구현
+    - 이력 상태(직원 추가, 정보 수정, 직원 삭제)를 반영 
       
 ---
 
@@ -118,15 +119,32 @@
 <pre> 
   src 
   ┣ main 
-  ┃ ┣ java 
+  ┃ ┗ generated 
+  ┃ ┃ ┗ com.team.hrbank.entity
+  ┃ ┃ ┣ QBackup 
+  ┃ ┃ ┣ QBaseEntity
+  ┃ ┃ ┣ QBaseUpdatableEntity
+  ┃ ┃ ┣ QBinaryContent
+  ┃ ┃ ┣ QChangeLog
+  ┃ ┃ ┣ QChangeLogDetail
+  ┃ ┃ ┣ QDepartment
+  ┃ ┃ ┣ QEmployee
+  ┃ ┗ java 
   ┃ ┃ ┗ com.team.hrbank
   ┃ ┃ ┣ config
   ┃ ┃ ┣ controller 
   ┃ ┃ ┣ converter
-  ┃ ┃ ┣ repository 
+  ┃ ┃ ┗ dto
+  ┃ ┃ ┃ ┣ backup 
+  ┃ ┃ ┃ ┣ binarycontent
+  ┃ ┃ ┃ ┣ changelog 
+  ┃ ┃ ┃ ┣ department
+  ┃ ┃ ┃ ┣ employee
+  ┃ ┃ ┃ ┣ error
   ┃ ┃ ┣ service 
   ┃ ┃ ┣ entity
-  ┃ ┃ ┣ dto 
+  ┃ ┃ ┗ repository
+  ┃ ┃ ┃ ┣ custom
   ┃ ┃ ┣ exception 
   ┃ ┃ ┣ utils 
   ┃ ┃ ┣ enums
@@ -143,6 +161,7 @@
   ┃ ┗ java/com/example 
   ┃ ┗ HrBankApplicationTests.java  
   ┣ .gitignore 
+  ┣ build.gradle
   ┗ README.md 
 </pre>
 
