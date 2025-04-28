@@ -111,39 +111,39 @@ CREATE TABLE IF NOT EXISTS change_log_details
     updated_at    TIMESTAMPTZ  NOT NULL
 );
 
-INSERT INTO departments (name, description, foundation_date, created_at, updated_at)
-VALUES ('개발팀', '소프트웨어 개발 부서', '2022-01-01', now(), now()),
-       ('마케팅팀', '브랜드 전략과 시장 분석을 담당합니다.', '2021-06-15', now(), now()),
-       ('인사팀', '사내 인사 및 복지 업무를 담당합니다.', '2020-09-01', now(), now()),
-       ('디자인팀', 'UI/UX 디자인 및 브랜딩을 담당합니다.', '2023-03-10', now(), now()),
-       ('데이터팀', '데이터 분석 및 인사이트 제공을 담당합니다.', '2022-11-20', now(), now()),
-       ('고객지원팀', '고객 문의 및 지원 업무를 담당합니다.', '2021-02-05', now(), now()),
-       ('프론트엔드팀', '웹 프론트엔드 개발을 담당합니다.', '2022-08-01', now(), now()),
-       ('백엔드팀', '서버 및 DB 관리, API 개발을 담당합니다.', '2020-12-20', now(), now()),
-       ('QA팀', '품질 보증 및 테스트를 담당합니다.', '2023-04-10', now(), now()),
-       ('IT운영팀', '사내 IT 인프라 운영을 담당합니다.', '2021-11-30', now(), now()),
-       ('보안팀', '시스템 보안 및 정보 보호를 담당합니다.', '2023-02-14', now(), now());
-
-INSERT INTO employees (name, email, emp_number, dept_id, position, hire_date, status,
-                       profile_image_id, created_at, updated_at)
-SELECT '직원_' || gs                                     AS name,
-       'employee' || gs || '@hrbank.com'               AS email,
-       'EMP' || LPAD(gs::text, 4, '0')                 AS emp_number,
-       (FLOOR(random() * 11) + 1)::BIGINT              AS dept_id,   -- 1 ~ 11 랜덤
-       CASE
-           WHEN gs % 4 = 0 THEN '사원'
-           WHEN gs % 4 = 1 THEN '대리'
-           WHEN gs % 4 = 2 THEN '과장'
-           ELSE '부장'
-           END                                         AS position,
-       (DATE '2020-01-01' + (floor(random() * (DATE '2024-04-27' - DATE '2020-01-01')) ||
-                             ' days')::interval)::date AS hire_date, -- 랜덤 날짜
-       CASE
-           WHEN gs % 10 = 0 THEN 'ON_LEAVE'::employee_status
-           WHEN gs % 15 = 0 THEN 'RESIGNED'::employee_status
-           ELSE 'ACTIVE'::employee_status
-           END                                         AS status,
-       NULL                                            AS profile_image_id,
-       CURRENT_TIMESTAMP                               AS created_at,
-       CURRENT_TIMESTAMP                               AS updated_at
-FROM generate_series(1, 100) AS gs;
+-- INSERT INTO departments (name, description, foundation_date, created_at, updated_at)
+-- VALUES ('개발팀', '소프트웨어 개발 부서', '2022-01-01', now(), now()),
+--        ('마케팅팀', '브랜드 전략과 시장 분석을 담당합니다.', '2021-06-15', now(), now()),
+--        ('인사팀', '사내 인사 및 복지 업무를 담당합니다.', '2020-09-01', now(), now()),
+--        ('디자인팀', 'UI/UX 디자인 및 브랜딩을 담당합니다.', '2023-03-10', now(), now()),
+--        ('데이터팀', '데이터 분석 및 인사이트 제공을 담당합니다.', '2022-11-20', now(), now()),
+--        ('고객지원팀', '고객 문의 및 지원 업무를 담당합니다.', '2021-02-05', now(), now()),
+--        ('프론트엔드팀', '웹 프론트엔드 개발을 담당합니다.', '2022-08-01', now(), now()),
+--        ('백엔드팀', '서버 및 DB 관리, API 개발을 담당합니다.', '2020-12-20', now(), now()),
+--        ('QA팀', '품질 보증 및 테스트를 담당합니다.', '2023-04-10', now(), now()),
+--        ('IT운영팀', '사내 IT 인프라 운영을 담당합니다.', '2021-11-30', now(), now()),
+--        ('보안팀', '시스템 보안 및 정보 보호를 담당합니다.', '2023-02-14', now(), now());
+--
+-- INSERT INTO employees (name, email, emp_number, dept_id, position, hire_date, status,
+--                        profile_image_id, created_at, updated_at)
+-- SELECT '직원_' || gs                                     AS name,
+--        'employee' || gs || '@hrbank.com'               AS email,
+--        'EMP' || LPAD(gs::text, 4, '0')                 AS emp_number,
+--        (FLOOR(random() * 11) + 1)::BIGINT              AS dept_id,   -- 1 ~ 11 랜덤
+--        CASE
+--            WHEN gs % 4 = 0 THEN '사원'
+--            WHEN gs % 4 = 1 THEN '대리'
+--            WHEN gs % 4 = 2 THEN '과장'
+--            ELSE '부장'
+--            END                                         AS position,
+--        (DATE '2020-01-01' + (floor(random() * (DATE '2024-04-27' - DATE '2020-01-01')) ||
+--                              ' days')::interval)::date AS hire_date, -- 랜덤 날짜
+--        CASE
+--            WHEN gs % 10 = 0 THEN 'ON_LEAVE'::employee_status
+--            WHEN gs % 15 = 0 THEN 'RESIGNED'::employee_status
+--            ELSE 'ACTIVE'::employee_status
+--            END                                         AS status,
+--        NULL                                            AS profile_image_id,
+--        CURRENT_TIMESTAMP                               AS created_at,
+--        CURRENT_TIMESTAMP                               AS updated_at
+-- FROM generate_series(1, 100) AS gs;
