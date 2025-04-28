@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ChangeLogServiceImpl implements ChangeLogService {
+
     private final ChangeLogRepository changeLogRepository;
     private final ChangeLogMapper changeLogMapper;
     private final ChangeLogDetailRepository changeLogDetailRepository;
@@ -43,6 +44,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         if(idAfter != null && changeLogRepository.existsById(idAfter)){
             throw new IllegalArgumentException("유효하지 않은 커서 값입니다.: idAfter = " + idAfter);
         }
+
         // 2. 데이터 조건 검색 (size + 1로 조회해 hasNext 판단)
         List<ChangeLog> logs = changeLogRepository.findByConditions(
             employeeNumber, type, memo, ipAddress,
@@ -50,22 +52,27 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             sortField, sortDirection,
             size + 1
         );
+
         // 3. 다음 페이지 존재 여부 판단
         boolean hasNext = logs.size() > size;
         if (hasNext) {
             logs = logs.subList(0, size);
         }
+
         // 4. Entity -> DTO 변환
         List<ChangeLogDto> dtos = logs.stream()
             .map(changeLogMapper::toDto)
             .collect(Collectors.toList());
+
         // 5. 다음 커서(ID) 설정
         Long nextIdAfter = hasNext ? logs.get(logs.size() - 1).getId() : null;
         String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
+
         // 6. 조건 기반 전체 개수 조회
         long totalElements = changeLogRepository.countByConditions(
             employeeNumber, type, memo, ipAddress, atFrom, atTo
         );
+
         // 7. 최종 응답 DTO 구성
         return new CursorPageResponseChangeLogDto(
             dtos,
@@ -79,7 +86,6 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     @Transactional
-    // 이력(ChangeLog), 변경 필드(ChangeLogDetail) 리스트 저장
     public void save(ChangeType type, String employeeNumber, List<DiffDto> details, String memo, String ipAddress) {
         ChangeLog changeLog = new ChangeLog(type, employeeNumber, memo, ipAddress);
         changeLogRepository.save(changeLog);
@@ -99,7 +105,6 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     @Transactional(readOnly = true)
-    // 직원 정보 수정 이력 상세 조회
     public List<DiffDto> findChangeDetails(Long changeLogId) {
         boolean exists = changeLogRepository.existsById(changeLogId);
         if (!exists) {

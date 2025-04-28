@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.List;
 
 public interface ChangeLogService {
-    // 이력 등록
     void save(
         ChangeType type,
         String employeeNumber,
@@ -29,10 +28,8 @@ public interface ChangeLogService {
         int size
     );
 
-    // 상세 변경 내역 조회
     List<DiffDto> findChangeDetails(Long changeLogId);
 
-    // 수정 이력 건수 조회
     long countChangeLogs(
         String employeeNumber,
         ChangeType type,

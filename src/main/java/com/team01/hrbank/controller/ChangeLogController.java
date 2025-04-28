@@ -1,6 +1,5 @@
 package com.team01.hrbank.controller;
 
-
 import com.team01.hrbank.dto.changelog.CursorPageResponseChangeLogDto;
 import com.team01.hrbank.dto.changelog.DiffDto;
 import com.team01.hrbank.enums.ChangeType;
