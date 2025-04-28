@@ -46,8 +46,8 @@ public class BackupServiceImpl implements BackupService {
         return applicationContext.getBean(BackupServiceImpl.class);
     }
 
-    @Override
     @Scheduled(cron = "${spring.backup.schedule.time}")
+    @Override
     public void run() {
         Backup runBackup = null;
         try {
@@ -106,8 +106,11 @@ public class BackupServiceImpl implements BackupService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Backup startBackup(String worker) {
-        Backup newBackup = Backup.builder().worker(worker).startedAt(Instant.now())
-            .status(BackupStatus.IN_PROGRESS).build();
+        Backup newBackup = Backup.builder().worker(worker)
+            .startedAt(Instant.now())
+            .status(BackupStatus.IN_PROGRESS)
+            .build();
+        
         return backUpRepository.save(newBackup);
     }
 
