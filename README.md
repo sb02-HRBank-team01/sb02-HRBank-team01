@@ -15,7 +15,7 @@
 |----------|------------------------|
 | 안재관   | [https://github.com/kkwan99](https://github.com/kkwan99) |
 | 양찬혁   | [GitHub](개인_GitHub_링크) |
-| 윤영로   | yryun00@gmail.com |
+| 윤영로   | [https://github.com/yun0ro](https://github.com/yun0ro) |
 | 한성태   | [GitHub](개인_GitHub_링크) |
 
 ---
@@ -83,9 +83,11 @@
 ---
 
 ### ✅ 윤영로  
-- (개발한 기능 요약)  
-
-
+- **직원 정보 수정 및 이력 관리**
+    - 이력 등록 기능 구현
+    - 이력 목록 조회 시 **QueryDSL** 기반 **동적 검색**, **정렬**, **커서 기반 페이지네이션** 처리
+    - 이력 상세 변경 내용 조회 구현
+      
 ---
 
 ### ✅ 양찬혁  
@@ -101,8 +103,6 @@
     - 백업 이력 조회 및 커서 기반 페이지네이션 처리
 
 
-
-
 ---
 
 ## 📁 디렉토리 구조
@@ -110,17 +110,21 @@
   src 
   ┣ main 
   ┃ ┣ java 
-  ┃ ┃ ┗ com.example 
+  ┃ ┃ ┗ com.team.hrbank
+  ┃ ┃ ┣ config
   ┃ ┃ ┣ controller 
-  ┃ ┃ ┣ model 
+  ┃ ┃ ┣ converter
   ┃ ┃ ┣ repository 
   ┃ ┃ ┣ service 
-  ┃ ┃ ┣ security 
+  ┃ ┃ ┣ entity
   ┃ ┃ ┣ dto 
   ┃ ┃ ┣ exception 
   ┃ ┃ ┣ utils 
+  ┃ ┃ ┣ enums
+  ┃ ┃ ┣ mapper
+  ┃ ┃ ┣ strorage
   ┃ ┣ resources 
-  ┃ ┃ ┣ application.yaml 
+  ┃ ┃ ┣ HrBankApplication.yaml 
   ┃ ┃ ┗ static 
   ┃ ┃ ┣ css 
   ┃ ┃ ┃ ┗ style.css 
@@ -128,7 +132,7 @@
   ┃ ┃ ┗ script.js 
   ┣ test 
   ┃ ┗ java/com/example 
-  ┃ ┗ ApplicationTests.java  
+  ┃ ┗ HrBankApplicationTests.java  
   ┣ .gitignore 
   ┗ README.md 
 </pre>
