@@ -27,5 +27,4 @@ public class BinaryContent extends BaseEntity {
         this.contentType = contentType;
     }
 
-
 }

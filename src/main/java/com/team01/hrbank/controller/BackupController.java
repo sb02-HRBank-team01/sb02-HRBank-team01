@@ -24,11 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/backups")
-@Slf4j
 public class BackupController {
 
     private final BackupService backUpService;
-
 
     @GetMapping
     public ResponseEntity<BackupPageDto> findBackUpList(
@@ -54,7 +52,7 @@ public class BackupController {
     }
 
     @PostMapping
-    public ResponseEntity<BackupDto> createBackUp(HttpServletRequest request) throws IOException {
+    public ResponseEntity<BackupDto> createBackUp(HttpServletRequest request) {
         String requesterIp = extractClientIp(request);
         BackupDto createdBackup = backUpService.triggerManualBackup(requesterIp);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBackup);
@@ -62,10 +60,9 @@ public class BackupController {
 
     @GetMapping("/latest")
     public ResponseEntity<BackupDto> findLastestBackUp(
-        @RequestParam(value = "status", required = false) String statusStr) {
-        String statusToParse = (statusStr == null) ? "COMPLETED" : statusStr;
-        return backUpService.findLatestBackupByStatus(statusToParse).map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+        @RequestParam(value = "status", defaultValue = "COMPLETED") String statusStr) {
+        BackupDto result = backUpService.findLatestBackupByStatus(statusStr);
+        return ResponseEntity.ok(result);
     }
 
     private String extractClientIp(HttpServletRequest request) {

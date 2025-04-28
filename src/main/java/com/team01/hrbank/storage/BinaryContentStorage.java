@@ -1,11 +1,14 @@
 package com.team01.hrbank.storage;
 
-import java.io.InputStream;
+import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 public interface BinaryContentStorage {
 
-    Long save(Long id, byte[] bytes);
+    Long put(Long id, byte[] bytes);
 
-    InputStream get(Long id);
+    Long putCsv(Long id, byte[] bytes);
 
+    ResponseEntity<Resource> downloadResponse(BinaryContentDto binaryContentDto);
 }

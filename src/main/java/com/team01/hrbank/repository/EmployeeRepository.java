@@ -3,6 +3,7 @@ package com.team01.hrbank.repository;
 import com.team01.hrbank.entity.Employee;
 
 import com.team01.hrbank.repository.custom.EmployeeQueryRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -27,4 +28,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, Emplo
         "LEFT JOIN FETCH e.profile " +
         "WHERE e.id = :id")
     Optional<Employee> findWithDetailsById(@Param("id") Long id);
+
+    @Query("SELECT MAX(e.createdAt) FROM Employee e")
+    Instant findLatestCreatedAt();
 }
