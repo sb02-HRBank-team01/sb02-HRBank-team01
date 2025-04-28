@@ -6,7 +6,6 @@ HELP.md
 build/
 data/*
 uploads/
-images/
 *.log
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
