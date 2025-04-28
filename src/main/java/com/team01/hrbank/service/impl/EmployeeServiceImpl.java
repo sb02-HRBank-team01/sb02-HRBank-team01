@@ -8,6 +8,7 @@ import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
 import com.team01.hrbank.dto.employee.EmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
+import com.team01.hrbank.entity.BaseEntity;
 import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
@@ -25,6 +26,7 @@ import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import com.team01.hrbank.util.DiffUtil;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -67,6 +69,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            
             binaryContent = binaryContentRepository.save(binaryContent);
         }
 
@@ -151,6 +154,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 (long) profile.getBytes().length,
                 profile.getContentType()
             );
+            
             binaryContent = binaryContentRepository.save(binaryContent);
         }
 
@@ -181,7 +185,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         if (binaryContent != null) {
-            System.out.println("binary" + binaryContent.getId());
             binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
         }
 
@@ -255,13 +258,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.employeeCountBy(employeeStatus, fromDate, toDate);
     }
 
+    // 기간별 기본 시작일 계산
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {
         return switch (unit.toLowerCase()) {
-            case "day" -> to.minusDays(12);
+            case "day" -> to.minusDays(30);
             case "week" -> to.minusWeeks(12);
-            case "quarter" -> to.minusMonths(12 * 3); // 12분기 = 3년
-            case "year" -> to.minusYears(12);
-            default -> to.minusMonths(12); // month 기본값
+            case "quarter" -> to.minusMonths(12);
+            case "year" -> to.minusYears(5);
+            default -> to.minusMonths(12); // 기본값은 1년
         };
     }
 }
