@@ -17,6 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     // 400: 유효성 검사 실패
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
@@ -74,6 +75,7 @@ public class GlobalExceptionHandler {
             .body(error);
     }
 
+    // 404: 엔티티를 찾을 수 없을 때
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -85,7 +87,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    // Enum 파라미터 에러
+    // 400: 잘못된 Enum 값 전달
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleInvalidEnum(HttpMessageNotReadableException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -97,7 +99,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    // 400 error
+    // 400: 잘못된 요청 파라미터
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -109,7 +111,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-
+    // 400: 유효하지 않은 정렬 파라미터
     @ExceptionHandler(InvalidSortParameterException.class)
     public ResponseEntity<ErrorResponse> handleInvalidSort(InvalidSortParameterException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -121,20 +123,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    // 400 : 타입 매치 에러
+    // 400: 타입 매치 에러
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+        MethodArgumentTypeMismatchException ex) {
         ErrorResponse error = new ErrorResponse(
             Instant.now(),
             HttpStatus.BAD_REQUEST.value(),
             "잘못된 요청입니다.",
-            ex.getName() +  " : " + Objects.requireNonNull(ex.getValue())
+            ex.getName() + " : " + Objects.requireNonNull(ex.getValue())
         );
         return ResponseEntity.badRequest().body(error);
     }
+
+    // 500: 백업 작업 실패
     @ExceptionHandler(BackupFailedException.class)
     public ResponseEntity<ErrorResponse> handleBackupFailed(BackupFailedException ex) {
-
         ErrorResponse error = new ErrorResponse(
             Instant.now(),
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -142,7 +146,6 @@ public class GlobalExceptionHandler {
             ex.getMessage()
 
         );
-
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(error);
