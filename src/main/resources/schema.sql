@@ -4,7 +4,6 @@
 -- DROP TABLE IF EXISTS departments CASCADE;
 -- DROP TABLE IF EXISTS binary_contents CASCADE;
 -- DROP TABLE IF EXISTS change_logs CASCADE;
--- DROP TABLE IF EXISTS change_log_details CASCADE;
 -- DROP TYPE IF EXISTS employee_status;
 -- DROP TYPE IF EXISTS backup_status_enum;
 -- DROP TYPE IF EXISTS change_type CASCADE;
@@ -77,18 +76,12 @@ CREATE TABLE IF NOT EXISTS employees
 CREATE TABLE IF NOT EXISTS back_ups
 (
     id         SERIAL PRIMARY KEY,
+    binary_content_id BIGINT REFERENCES binary_contents (id),
     worker     VARCHAR(255)       NOT NULL,
     status     backup_status_enum NOT NULL,
     started_at TIMESTAMP          NOT NULL,
     ended_at   TIMESTAMP,
     created_at TIMESTAMPTZ        NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS backups_files
-(
-    backups_id         BIGINT      NOT NULL REFERENCES back_ups (id) on Delete Cascade,
-    binary_contents_id BIGINT      NOT NULL REFERENCES binary_contents (id) on Delete Cascade,
-    created_at         TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS change_logs

@@ -10,14 +10,17 @@ import com.team01.hrbank.enums.BackupStatus;
 import com.team01.hrbank.exception.BackupFailedException;
 import com.team01.hrbank.mapper.BackupMapper;
 import com.team01.hrbank.repository.BackupRepository;
+import com.team01.hrbank.repository.BinaryContentRepository;
 import com.team01.hrbank.repository.ChangeLogRepository;
 import com.team01.hrbank.repository.EmployeeRepository;
 import com.team01.hrbank.service.BackupService;
-import com.team01.hrbank.storage.CsvBackupStorage;
+import com.team01.hrbank.storage.BinaryContentStorage;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,239 +38,143 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class BackupServiceImpl implements BackupService {
 
-    private final BackupRepository backUpRepository;
+    private final BackupRepository backupRepository;
+    private final BinaryContentStorage binaryContentStorage;
     private final EmployeeRepository employeeRepository;
-    private final CsvBackupStorage csvBackupStorage;
-    private final BackupMapper backUpMapper;
     private final ChangeLogRepository changeLogRepository;
-    private final ApplicationContext applicationContext;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BackupMapper backupMapper;
 
-    private BackupServiceImpl getSelf() {
-        return applicationContext.getBean(BackupServiceImpl.class);
-    }
-
-    @Override
     @Scheduled(cron = "${spring.backup.schedule.time}")
-    public void run() {
-        Backup runBackup = null;
-        try {
-            final String worker = "system";
-            if (!needLogForScheduler()) {
-                getSelf().skippedSystemBackup();
-                return;
-            }
-            runBackup = getSelf().startBackup(worker);
-            getSelf().registerBackup(runBackup);
-        } catch (Exception e) {
-
-            if (runBackup != null) {
-                try {
-                    getSelf().handleBackupFailure(runBackup.getId(), e);
-                } catch (Exception failureHandlerEx) {
-                    failureHandlerEx.printStackTrace();
-                }
-            } else {
-                e.printStackTrace();
-            }
-        }
+    @Transactional
+    public void scheduledBackup() {
+        triggerManualBackup("SYSTEM");
     }
 
     @Transactional
     @Override
-    public BackupDto triggerManualBackup(String workerIp) {
-        if (!lastedBackup()) {
-            Backup skipped = getSelf().skippedManualBackup(workerIp);
-            return backUpMapper.toDto(skipped);
-        }
+    public BackupDto triggerManualBackup(String requestIp) {
+        Instant backupStartTime = Instant.now();
 
-        Backup initialBackup = null;
+        // 1. IN_PROGRESS 상태로 먼저 저장
+        Backup backup = Backup.builder()
+            .status(BackupStatus.IN_PROGRESS)
+            .worker(requestIp)
+            .startedAt(backupStartTime)
+            .build();
+        backup = backupRepository.save(backup);
+
         try {
-            final String worker = workerIp;
-            initialBackup = getSelf().startBackup(worker);
-            getSelf().registerBackup(initialBackup);
+            // 2. 변경사항 확인
+            Instant latestChangeLogCreatedAt = changeLogRepository.findLatestCreatedAt();
+            Instant latestEmployeeCreatedAt = employeeRepository.findLatestCreatedAt();
+            Optional<Backup> lastCompletedBackupOpt = backupRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED);
+            Instant lastBackupEndedAt = lastCompletedBackupOpt.map(Backup::getEndedAt).orElse(null);
 
-            Backup finalBackup = findBackupByIdOrThrow(initialBackup.getId());
-            return backUpMapper.toDto(finalBackup);
+            Instant latestChangeOrCreationTime = Stream.of(latestChangeLogCreatedAt, latestEmployeeCreatedAt)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
 
-        } catch (Exception e) {
-            if (initialBackup != null) {
-                Long failedBackupId = initialBackup.getId();
-                try {
-                    getSelf().handleBackupFailure(failedBackupId, e);
-                } catch (Exception failureHandlerEx) {
-                    failureHandlerEx.printStackTrace();
-                }
-                throw new BackupFailedException("수동 백업 실패" + failedBackupId, e);
-            } else {
-                throw new BackupFailedException("백업 시장 중 오류 발생");
+            boolean hasNoChangesSinceLastBackup = (latestChangeOrCreationTime == null)
+                || (lastBackupEndedAt != null && latestChangeOrCreationTime.isBefore(lastBackupEndedAt));
+
+            if (hasNoChangesSinceLastBackup) {
+                // 3. 변경사항 없으면 SKIPPED 처리
+                backup.setStatus(BackupStatus.SKIPPED);
+                backup.setEndedAt(Instant.now());
+                backupRepository.save(backup);
+
+                return new BackupDto(
+                    backup.getId(),
+                    backup.getWorker(),
+                    backup.getStartedAt(),
+                    backup.getEndedAt(),
+                    backup.getStatus().name(),
+                    null
+                );
             }
-        }
-    }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Backup startBackup(String worker) {
-        Backup newBackup = Backup.builder().worker(worker).startedAt(Instant.now())
-            .status(BackupStatus.IN_PROGRESS).build();
-        return backUpRepository.save(newBackup);
-    }
+            // 4. 변경사항 있으면 CSV 파일 만들기
+            List<Employee> employees = employeeRepository.findAll();
+            byte[] csvData = createCsvData(employees);
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void registerBackup(Backup backupInProgress) throws IOException {
-        Long backupId = backupInProgress.getId();
-        List<Employee> employees = employeeRepository.findAll();
-        List<BinaryContent> profiles = employees.stream().map(Employee::getProfile)
-            .filter(Objects::nonNull).distinct().collect(Collectors.toList());
+            Long lastFileId = binaryContentRepository.findTopByOrderByIdDesc()
+                .map(BinaryContent::getId)
+                .orElse(0L);
+            Long newFileId = lastFileId + 1;
 
-        Backup managed = findBackupByIdOrThrow(backupId);
-        managed.setProFileBackup(profiles);
-        backUpRepository.saveAndFlush(managed);
+            BinaryContent binaryContent = new BinaryContent(
+                newFileId + ".csv",
+                (long) csvData.length,
+                "text/csv"
+            );
+            binaryContent = binaryContentRepository.save(binaryContent);
 
-        try (Stream<Employee> stream = employees.stream()) {
-            csvBackupStorage.saveCsvFromStream(backupId, stream);
-        }
+            // 파일 저장
+            binaryContentStorage.putCsv(binaryContent.getId(), csvData);
 
-        Backup toComplete = findBackupByIdOrThrow(backupId);
-        if (toComplete.getStatus() == BackupStatus.IN_PROGRESS) {
-            toComplete.complete(Instant.now());
-            backUpRepository.save(toComplete);
-        }
-    }
+            // 5. Backup 완료 처리
+            backup.setStatus(BackupStatus.COMPLETED);
+            backup.setFile(binaryContent);
+            backup.setEndedAt(Instant.now());
+            backupRepository.save(backup);
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleBackupFailure(Long backupId, Exception failureCause) {
-        try {
-            cleanupBackupFiles(backupId, failureCause);
+            return new BackupDto(
+                backup.getId(),
+                backup.getWorker(),
+                backup.getStartedAt(),
+                backup.getEndedAt(),
+                backup.getStatus().name(),
+                binaryContent.getId()
+            );
 
-            Backup backup = backUpRepository.findById(backupId).orElseThrow(
-                () -> new EntityNotFoundException("실패 처리 중 백업 ID를 찾을 수 없음" + backupId));
-
-            if (backup.getStatus() != BackupStatus.FAILED) {
-                backup.fail(Instant.now());
-                backUpRepository.saveAndFlush(backup);
-            }
         } catch (Exception e) {
+            // 6. 실패 처리
+            backup.setStatus(BackupStatus.FAILED);
+            backup.setEndedAt(Instant.now());
+            backupRepository.save(backup);
 
-            throw new BackupFailedException("백업 실패 처리 중 오류 발생", e);
+            return new BackupDto(
+                backup.getId(),
+                backup.getWorker(),
+                backup.getStartedAt(),
+                backup.getEndedAt(),
+                backup.getStatus().name(),
+                null
+            );
         }
-    }
-
-    private void cleanupBackupFiles(Long backupId, Exception failureCause) {
-        try {
-            csvBackupStorage.saveErrorLog(backupId, failureCause);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            csvBackupStorage.deleteCsvFile(backupId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean lastedBackup() {
-        Optional<Backup> lastCompleted = backUpRepository.findTopByStatusOrderByEndedAtDesc(
-            (BackupStatus.COMPLETED));
-        if (lastCompleted.isEmpty()) {
-            return true;
-        }
-        Instant lastCompletionTime = lastCompleted.get().getEndedAt();
-        if (lastCompletionTime == null) {
-            return true;
-        }
-        return changeLogRepository.existsByCreatedAtAfter(lastCompletionTime);
-    }
-
-    private boolean needLogForScheduler() {
-        final String batchWorker = "system";
-        Optional<Backup> lastCompletedBatch = backUpRepository.findTopByWorkerAndStatusOrderByEndedAtDesc(
-            batchWorker, BackupStatus.COMPLETED);
-        if (lastCompletedBatch.isEmpty()) {
-            return true;
-        }
-        Instant lastBatchEndTime = lastCompletedBatch.get().getEndedAt();
-        if (lastBatchEndTime == null) {
-            return true;
-        }
-        return changeLogRepository.existsByCreatedAtAfter(lastBatchEndTime);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void skippedSystemBackup() {
-        createSkippedBackup("system");
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Backup skippedManualBackup(String workerIp) {
-        return createSkippedBackup(workerIp);
-    }
-
-    private Backup createSkippedBackup(String worker) {
-        Instant now = Instant.now();
-        Backup skippedBackup = Backup.builder().worker(worker).startedAt(now).endedAt(now)
-            .status(BackupStatus.SKIPPED).build();
-        return backUpRepository.save(skippedBackup);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public BackupPageDto search(String worker, String statusStr, Instant startedAtFrom,
-        Instant startedAtTo, CursorRequest req) {
-        BackupStatus status = parseStatus(statusStr);
-        long totalElements = backUpRepository.countBackups(worker, status, startedAtFrom,
-            startedAtTo);
-        List<Backup> allResults = backUpRepository.searchWithCursor(worker, status, startedAtFrom,
-            startedAtTo, req);
-        boolean hasNext = allResults.size() > req.size();
-        List<Backup> pageResults = hasNext ? allResults.subList(0, req.size()) : allResults;
-        Long lastId =
-            pageResults.isEmpty() ? null : pageResults.get(pageResults.size() - 1).getId();
-        String nextCursor = generateCursor(lastId);
-        return backUpMapper.toPageDto(pageResults, nextCursor, lastId, req.size(), totalElements,
-            hasNext);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Optional<BackupDto> findLatestBackupByStatus(String statusStr) {
-        BackupStatus status = parseStatus(statusStr);
-        return backUpRepository.findTopByStatusOrderByStartedAtDesc(status)
-            .map(backUpMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public void validateBackupId(Long id) {
-        Backup backup = findBackupByIdOrThrow(id);
-        if (backup.getStatus() != BackupStatus.COMPLETED) {
-            throw new BackupFailedException("백업이 완료되지 않음.");
-        }
+    public BackupPageDto search(String worker, String status, Instant startedAtFrom, Instant startedAtTo, CursorRequest cursorRequest) {
+        return backupRepository.search(worker, status, startedAtFrom, startedAtTo, cursorRequest);
     }
 
-    private BackupStatus parseStatus(String statusStr) {
-        if (!StringUtils.hasText(statusStr)) {
-            return null;
-        }
-        String upperStatus = statusStr.toUpperCase().trim();
-        if ("COMPLETE".equals(upperStatus)) {
-            return BackupStatus.COMPLETED;
-        }
-        try {
-            return BackupStatus.valueOf(upperStatus);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+    @Override
+    public BackupDto findLatestBackupByStatus(String statusStr) {
+        return backupRepository.findTopByStatusOrderByEndedAtDesc(BackupStatus.valueOf(statusStr))
+            .map(backupMapper::toDto)
+            .orElse(null);
     }
 
-    private String generateCursor(Long lastId) {
-        if (lastId == null) {
-            return null;
-        }
-        String cursorData = String.format("{\"id\":%d}", lastId);
-        return Base64.getEncoder().encodeToString(cursorData.getBytes());
-    }
+    private byte[] createCsvData(List<Employee> employees) {
+        // CSV 파일로 저장할 데이터를 변환하는 로직 구현
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("ID,직원번호,이름,이메일,부서,직급,입사일,상태\n");
 
-    private Backup findBackupByIdOrThrow(Long backupId) {
-        return backUpRepository.findById(backupId).orElseThrow(
-            () -> new EntityNotFoundException("백업 ID에 해당하는 기록을 찾을 수 없음" + backupId));
+        for (Employee employee : employees) {
+            csvBuilder.append(employee.getId()).append(",")
+                .append(employee.getEmployeeNumber()).append(",")
+                .append(employee.getName()).append(",")
+                .append(employee.getEmail()).append(",")
+                .append(employee.getDepartment().getName()).append(",")
+                .append(employee.getPosition()).append(",")
+                .append(employee.getHireDate()).append(",")
+                .append(employee.getStatus().name()).append("\n");
+        }
+
+        return csvBuilder.toString().getBytes();
     }
 }

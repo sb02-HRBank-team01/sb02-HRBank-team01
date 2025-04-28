@@ -4,7 +4,7 @@ spring:
 
   backup:
     schedule:
-      time: "0 0 * * * *"   # 매 정각
+      time: "0 0 * * * *"
 
   task:
   scheduling:
@@ -53,6 +53,5 @@ springdoc:
 #    org.hibernate.SQL: debug
 #    org.hibernate.type.descriptor.sql.BasicBinder: trace
 
-csv:
-  backup:
-    root: ./data/backups
+hr_bank:
+  file: ./files

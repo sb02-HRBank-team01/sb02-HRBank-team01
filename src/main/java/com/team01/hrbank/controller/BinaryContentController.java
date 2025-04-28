@@ -1,8 +1,8 @@
 package com.team01.hrbank.controller;
 
 import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
-import com.team01.hrbank.service.BackupService;
-import com.team01.hrbank.storage.CsvBackupStorage;
+import com.team01.hrbank.service.BinaryContentService;
+import com.team01.hrbank.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BinaryContentController {
 
-    private final CsvBackupStorage csvBackupStorage;
-    private final BackupService backupService;
+    private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
-        backupService.validateBackupId(id);
-        return csvBackupStorage.downloadResponse(id);
+        BinaryContentDto binaryContentDto = binaryContentService.find(id);
+        return binaryContentStorage.downloadResponse(binaryContentDto);
     }
 }

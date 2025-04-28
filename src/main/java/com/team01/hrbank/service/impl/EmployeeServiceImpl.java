@@ -89,7 +89,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         );
 
         if (binaryContent != null) {
-            binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
+            binaryContentStorage.put(binaryContent.getId(), profile.getBytes());
         }
 
         return employeeMapper.toDto(employee);
@@ -178,7 +178,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (binaryContent != null) {
             System.out.println("binary" + binaryContent.getId());
-            binaryContentStorage.save(binaryContent.getId(), profile.getBytes());
+            binaryContentStorage.put(binaryContent.getId(), profile.getBytes());
         }
 
         return employeeMapper.toDto(employee);
