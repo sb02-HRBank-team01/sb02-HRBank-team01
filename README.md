@@ -5,7 +5,7 @@
 ---
 
 ## 🌐 배포 주소
-📎 [배포 주소 바로 가기](sb02-hrbank-team01-production.up.railway.app)  
+📎 [배포 주소 바로 가기](https://sb02-hrbank-team01-production.up.railway.app/dashboard)  
 
 ---
 
