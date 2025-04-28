@@ -251,13 +251,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private String generateEmployeeNumber() {
-        Employee lastEmployee = employeeRepository.findTopByOrderByEmployeeNumberDesc().orElse(null);
-
-        int newEmployeeNumber = (lastEmployee != null)
-            ? Integer.parseInt(lastEmployee.getEmployeeNumber().substring(3)) + 1
-            : 1; // 첫 번째 직원이면 EMP00001 부여
-
-        return String.format("EMP%05d", newEmployeeNumber);
+        Employee lastEmployee = employeeRepository.findTopByOrderByIdDesc().orElse(null);
+        Long newEmployeeId = (lastEmployee != null) ? lastEmployee.getId() + 1 : 1L;
+        return String.format("EMP%05d", newEmployeeId);
     }
 
     private LocalDate calculateDefaultFrom(LocalDate to, String unit) {

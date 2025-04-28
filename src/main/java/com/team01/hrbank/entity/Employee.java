@@ -10,10 +10,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,12 +62,5 @@ public class Employee extends BaseUpdatableEntity {
         this.hireDate = hireDate;
         this.status = status;
         this.profile = profile;
-    }
-
-    @PrePersist
-    private void assignEmployeeNumber() {
-        if (this.employeeNumber == null) {
-          this.employeeNumber = UUID.randomUUID().toString();
-        }
     }
 }
