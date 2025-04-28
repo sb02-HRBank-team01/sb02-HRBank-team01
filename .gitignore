@@ -16,7 +16,6 @@ README.md
 src/main/resources
 src/main/generated
 
-
 ### STS ###
 .apt_generated
 .classpath
