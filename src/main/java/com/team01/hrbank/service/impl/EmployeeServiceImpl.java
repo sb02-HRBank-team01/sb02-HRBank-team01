@@ -1,7 +1,7 @@
 package com.team01.hrbank.service.impl;
 
-import com.team01.hrbank.dto.employee.CursorPageRequestEmployeeDto;
 import com.team01.hrbank.dto.changelog.DiffDto;
+import com.team01.hrbank.dto.employee.CursorPageRequestEmployeeDto;
 import com.team01.hrbank.dto.employee.CursorPageResponseEmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeCreateRequest;
 import com.team01.hrbank.dto.employee.EmployeeDistributionDto;
@@ -13,7 +13,6 @@ import com.team01.hrbank.entity.Department;
 import com.team01.hrbank.entity.Employee;
 import com.team01.hrbank.enums.ChangeType;
 import com.team01.hrbank.enums.EmployeeStatus;
-import com.team01.hrbank.enums.TimeUnit;
 import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.EntityNotFoundException;
 import com.team01.hrbank.mapper.EmployeeMapper;
@@ -25,11 +24,7 @@ import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import com.team01.hrbank.util.DiffUtil;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -209,7 +204,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeTrendDto> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
-        // 기본값 설정
         LocalDate now = LocalDate.now();
         if (to == null) {
             to = now;
