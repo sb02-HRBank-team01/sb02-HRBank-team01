@@ -1,6 +1,5 @@
 .DS_Store
 HELP.md
-application.yml
 .gradle
 .gradle/
 .idea/
@@ -13,7 +12,6 @@ images/
 !**/src/main/**/build/
 !**/src/test/**/build/
 README.md
-src/main/resources
 src/main/generated
 
 ### STS ###
