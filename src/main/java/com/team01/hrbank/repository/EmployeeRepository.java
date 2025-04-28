@@ -12,9 +12,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, EmployeeQueryRepository {
 
+    Optional<Employee> findTopByOrderByIdDesc();
+
     boolean existsByEmail(String email);
 
-    boolean existsByDepartmentId(Long departmentId); // 단순히 존재 여부만 판단(조회X)
+    boolean existsByDepartmentId(Long departmentId);
 
     long countByDepartmentId(Long departmentId);
 

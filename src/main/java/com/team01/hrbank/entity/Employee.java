@@ -10,10 +10,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +33,7 @@ public class Employee extends BaseUpdatableEntity {
     private String email;
 
     @Column(name = "emp_number", nullable = false, unique = true, updatable = false)
-    private String employeeNumber = UUID.randomUUID().toString();
+    private String employeeNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dept_id", nullable = false)
@@ -55,17 +54,6 @@ public class Employee extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_image_id")
     private BinaryContent profile;
 
-    public Employee(String name, String email, Department department, String position,
-        LocalDate hireDate, EmployeeStatus status, BinaryContent profile) {
-        this.name = name;
-        this.email = email;
-        this.department = department;
-        this.position = position;
-        this.hireDate = hireDate;
-        this.status = status;
-        this.profile = profile;
-    }
-
     public void update(String name, String email, Department department, String position, LocalDate hireDate, EmployeeStatus status, BinaryContent profile) {
         this.name = name;
         this.email = email;
@@ -74,12 +62,5 @@ public class Employee extends BaseUpdatableEntity {
         this.hireDate = hireDate;
         this.status = status;
         this.profile = profile;
-    }
-
-    @PrePersist
-    private void assignEmployeeNumber() {
-        if (this.employeeNumber == null) {
-          this.employeeNumber = UUID.randomUUID().toString();
-        }
     }
 }

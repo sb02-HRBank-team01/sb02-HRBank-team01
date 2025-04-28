@@ -18,13 +18,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// 직원의 정보가 변경되었을 때, 어떤 필드가 어떻게 바뀌었는지를 ChangeLog, ChangeLogDetail 테이블에 기록
 @Service
 @RequiredArgsConstructor
 public class ChangeLogServiceImpl implements ChangeLogService {
-    private final ChangeLogRepository changeLogRepository;  // 이력 정보 저장/조회
-    private final ChangeLogMapper changeLogMapper;  // Entity -> Dto 변환 역할
-    private final ChangeLogDetailRepository changeLogDetailRepository;  // 변경 필드 정보 저장/조회
+
+    private final ChangeLogRepository changeLogRepository;
+    private final ChangeLogMapper changeLogMapper;
+    private final ChangeLogDetailRepository changeLogDetailRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -66,7 +66,6 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
         // 5. 다음 커서(ID) 설정
         Long nextIdAfter = hasNext ? logs.get(logs.size() - 1).getId() : null;
-        // encode설정
         String nextCursor = nextIdAfter != null ? String.valueOf(nextIdAfter) : null;
 
         // 6. 조건 기반 전체 개수 조회
@@ -87,14 +86,10 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     @Transactional
-    // 이력(ChangeLog), 변경 필드(ChangeLogDetail) 리스트 저장
     public void save(ChangeType type, String employeeNumber, List<DiffDto> details, String memo, String ipAddress) {
-        // ChangeLog 객체 생성 (type, 사번, memo, IP)
         ChangeLog changeLog = new ChangeLog(type, employeeNumber, memo, ipAddress);
-        // ChangeLogRepository.save(log)로 저장
         changeLogRepository.save(changeLog);
 
-        // DiffDto 리스트를 순회하면서 각각 ChangeLogDetail로 변환
         List<ChangeLogDetail> detailEntities = details.stream()
             .map(diffDto -> new ChangeLogDetail(
                 changeLog,
@@ -110,17 +105,13 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     @Transactional(readOnly = true)
-    // 직원 정보 수정 이력 상세 조회
     public List<DiffDto> findChangeDetails(Long changeLogId) {
-        // changeLog가 존재하지 않을 경우
         boolean exists = changeLogRepository.existsById(changeLogId);
         if (!exists) {
             throw new EntityNotFoundException("ChangeLog", changeLogId);
         }
-        // 해당 이력의 ChangeDetail 필드 목록 조회
         List<ChangeLogDetail> details = changeLogDetailRepository.findAllByChangeLogId(changeLogId);
 
-        // Dto 변환 (changeLogDetail -> diffDto)
         return details.stream()
             .map(detail -> new DiffDto(
                 detail.getPropertyName(),
@@ -132,7 +123,6 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     @Transactional(readOnly = true)
-    //
     public long countChangeLogs(
         String employeeNumber,
         ChangeType type,

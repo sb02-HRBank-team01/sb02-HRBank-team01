@@ -8,4 +8,6 @@ public record DepartmentDto(
     String description,
     LocalDate establishedDate,
     Long employeeCount
-) {}
+) {
+
+}
