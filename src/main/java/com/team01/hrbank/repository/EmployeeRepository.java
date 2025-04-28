@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, EmployeeQueryRepository {
 
-    Optional<Employee> findTopByOrderByEmployeeNumberDesc();
+    Optional<Employee> findTopByOrderByIdDesc();
 
     boolean existsByEmail(String email);
 
