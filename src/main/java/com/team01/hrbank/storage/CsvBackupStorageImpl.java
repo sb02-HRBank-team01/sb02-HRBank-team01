@@ -2,9 +2,18 @@ package com.team01.hrbank.storage;
 
 
 import com.team01.hrbank.entity.Employee;
-import com.team01.hrbank.exception.DuplicateException;
 import com.team01.hrbank.exception.FileOperationException;
 import jakarta.annotation.PostConstruct;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -13,29 +22,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*; // InvalidPathException 포함
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Repository
 public class CsvBackupStorageImpl implements CsvBackupStorage {
 
-    private final Path root;
     private static final String CSV_FILENAME_FORMAT = "backup_%d.csv";
     private static final String LOG_FILENAME_FORMAT = "error_%d.log";
-    private final DateTimeFormatter FILE_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern(
-        "yyyyMMddHHmmss");
+    private final Path root;
 
 
-    public CsvBackupStorageImpl(
-        @Value("${csv.backup.root:./data/backups}") String rootDir
-    ) {
+    public CsvBackupStorageImpl(@Value("${csv.backup.root:./data/backups}") String rootDir) {
         this.root = Paths.get(rootDir).toAbsolutePath().normalize();
     }
 
@@ -58,7 +53,7 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
         Files.createDirectories(filePath.getParent());
 
         if (Files.exists(filePath)) {
-            Files.delete(filePath); // 기존 파일 삭제 후 계속 진행
+            Files.delete(filePath);
         }
 
         String[] headers = {"ID", "EMP_number", "Name", "Email", "dept_id", "HireDate",
@@ -98,15 +93,11 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
 
         Files.createDirectories(filePath.getParent());
 
-        String stackTrace = Arrays.stream(error.getStackTrace())
-                                .map(StackTraceElement::toString)
-                                .collect(Collectors.joining("\n\t"));
+        String stackTrace = Arrays.stream(error.getStackTrace()).map(StackTraceElement::toString)
+            .collect(Collectors.joining("\n\t"));
         String errorMessage = String.format(
-            "Backup Failed for ID: %d\nError: %s\nStackTrace:\n\t%s",
-            backupId,
-            error.getMessage() != null ? error.getMessage() : "Unknown error",
-            stackTrace
-        );
+            "Backup Failed for ID: %d\nError: %s\nStackTrace:\n\t%s", backupId,
+            error.getMessage() != null ? error.getMessage() : "Unknown error", stackTrace);
 
         try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8)) {
             writer.write(errorMessage);
@@ -119,41 +110,43 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
     }
 
 
-
     @Override
     public InputStream load(String filename) {
         Path file = root.resolve(filename).normalize();
 
         if (Files.notExists(file)) {
-            throw new FileOperationException("백업 파일을 찾을 수 없습니다");
+            throw new FileOperationException("백업 파일을 찾을 수 없음.");
         }
         try {
             return Files.newInputStream(file);
         } catch (IOException e) {
-            throw new FileOperationException("백업 파일 로드 실패 ");
+            throw new FileOperationException("백업 파일 로드 실패");
         }
     }
 
 
     private String[] employeeToStringArray(Employee employee) {
-        return new String[] {
-            String.valueOf(employee.getId()),
+        return new String[]{String.valueOf(employee.getId()),
             employee.getEmployeeNumber() != null ? employee.getEmployeeNumber() : "",
             employee.getName() != null ? employee.getName() : "",
             employee.getEmail() != null ? employee.getEmail() : "",
-            employee.getDepartment() != null ? String.valueOf(employee.getDepartment().getId()) : "",
-            employee.getHireDate() != null ? employee.getHireDate().toString() : "",
+            employee.getDepartment() != null ? String.valueOf(employee.getDepartment().getId())
+                : "", employee.getHireDate() != null ? employee.getHireDate().toString() : "",
             employee.getProfile() != null ? String.valueOf(employee.getProfile().getId()) : "",
-            employee.getStatus() != null ? employee.getStatus().name() : ""
-        };
+            employee.getStatus() != null ? employee.getStatus().name() : ""};
     }
 
     private String escapeCsv(String field) {
-        if (field == null) return "";
-        boolean needsEscape = field.contains(",") || field.contains("\"") || field.contains("\n") || field.contains("\r");
+        if (field == null) {
+            return "";
+        }
+        boolean needsEscape =
+            field.contains(",") || field.contains("\"") || field.contains("\n") || field.contains(
+                "\r");
         String escaped = field.replace("\"", "\"\"");
         return needsEscape ? "\"" + escaped + "\"" : escaped;
     }
+
     @Override
     public ResponseEntity<Resource> downloadResponse(Long id) {
         try {
@@ -164,15 +157,13 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
 
             String filename = String.format(CSV_FILENAME_FORMAT, id);
 
-
             String contentType = "text/csv";
 
             return ResponseEntity.ok()
 
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"" + filename + "\"")
-                .body(resource);
+                    "attachment; filename=\"" + filename + "\"").body(resource);
         } catch (FileOperationException e) {
 
             return ResponseEntity.notFound().build();
@@ -180,18 +171,20 @@ public class CsvBackupStorageImpl implements CsvBackupStorage {
             return ResponseEntity.internalServerError().build();
         }
     }
+
     @Override
     public InputStream get(Long id) {
         Path file = resolvePath(id);
         if (Files.notExists(file)) {
-            throw new FileOperationException("파일을 찾을 수 없습니다.");
+            throw new FileOperationException("파일을 찾을 수 없음.");
         }
         try {
             return Files.newInputStream(file);
         } catch (IOException e) {
-            throw new FileOperationException("파일을 읽을 수 없습니다.");
+            throw new FileOperationException("파일을 읽을 수 없음.");
         }
     }
+
     private Path resolvePath(Long id) {
         String filename = String.format(CSV_FILENAME_FORMAT, id);
         return root.resolve(filename).normalize();

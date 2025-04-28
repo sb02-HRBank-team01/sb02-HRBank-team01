@@ -6,4 +6,8 @@ public class BackupFailedException extends RuntimeException {
         super(message, cause);
 
     }
+    public BackupFailedException(String message) {
+        super(message);
+
+    }
 }

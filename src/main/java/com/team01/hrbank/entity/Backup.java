@@ -41,13 +41,12 @@ public class Backup extends BaseEntity {
     private Instant endedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "backups_files",
-        joinColumns = @JoinColumn(name = "backups_id"),
-        inverseJoinColumns = @JoinColumn(name = "binary_contents_id"))
+    @JoinTable(name = "backups_files", joinColumns = @JoinColumn(name = "backups_id"), inverseJoinColumns = @JoinColumn(name = "binary_contents_id"))
     private List<BinaryContent> empProfiles = new ArrayList<>();
 
     @Builder
-    public Backup(Long id, Instant createdAt, BackupStatus status, String worker, Instant startedAt, Instant endedAt, List<BinaryContent> employeeProfilePicturesAtBackup) {
+    public Backup(Long id, Instant createdAt, BackupStatus status, String worker, Instant startedAt,
+        Instant endedAt, List<BinaryContent> employeeProfilePicturesAtBackup) {
         this.id = id;
         this.createdAt = createdAt;
         this.status = (status != null) ? status : BackupStatus.IN_PROGRESS;

@@ -1,7 +1,5 @@
 package com.team01.hrbank.storage;
 
-import com.team01.hrbank.dto.binarycontent.BinaryContentDto;
-import com.team01.hrbank.entity.BinaryContent;
 import com.team01.hrbank.entity.Employee;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface CsvBackupStorage {
 
-    String saveCsvFromStream(Long backupId,
-        Stream<Employee> employeeStream) throws IOException;
+    String saveCsvFromStream(Long backupId, Stream<Employee> employeeStream) throws IOException;
 
     String saveErrorLog(Long backupId, Exception error) throws IOException;
 
