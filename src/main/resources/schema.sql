@@ -34,21 +34,19 @@ CREATE TABLE IF NOT EXISTS departments
 
 CREATE TABLE IF NOT EXISTS binary_contents
 (
-    -- *** 1. ID 타입을 BIGSERIAL로 변경 ***
     id           BIGSERIAL PRIMARY KEY,
     file_name    VARCHAR(100) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
-    created_at   TIMESTAMPTZ  NOT NULL DEFAULT now()
+    created_at   TIMESTAMPTZ  NOT NULL
     );
 
 DO $$
 BEGIN
-    -- 시퀀스 존재 여부 확인 후 실행
-    IF EXISTS (SELECT 1 FROM information_schema.sequences WHERE sequence_name = 'binary_contents_id_seq') THEN
-ALTER SEQUENCE binary_contents_id_seq RESTART WITH 1000000000; --여기 수정
-END IF;
+    -- 시퀀스 시작 값을 1억으로 설정
+ALTER SEQUENCE binary_contents_id_seq RESTART WITH 100000000; -- 1억으로 변경
 END $$;
+
 
 
 CREATE TABLE IF NOT EXISTS employees
