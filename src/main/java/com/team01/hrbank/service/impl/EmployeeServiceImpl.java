@@ -177,7 +177,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
 
         if (binaryContent != null) {
-            System.out.println("binary" + binaryContent.getId());
             binaryContentStorage.put(binaryContent.getId(), profile.getBytes());
         }
 
@@ -212,6 +211,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (from == null) {
             from = calculateDefaultFrom(to, unit);
         }
+
         return employeeRepository.findEmployeeTrend(from, to, unit);
     }
 
