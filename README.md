@@ -51,7 +51,7 @@
 
 | 부서 관리 | 직원 관리 |
 |------------|------------|
-| <img width="1490" alt="스크린샷 2025-04-29 오전 1 17 31" src="https://github.com/user-attachments/assets/d4c22f54-5734-426b-89b6-6206dd4dd07d" /> | <img width="1471" alt="스크린샷 2025-04-27 오후 10 50 43" src="https://github.com/user-attachments/assets/9ef55eca-f14b-4e70-982c-25eee5afcf2d" /> |
+| <img width="1490" alt="스크린샷 2025-04-29 오전 1 17 31" src="https://github.com/user-attachments/assets/d4c22f54-5734-426b-89b6-6206dd4dd07d" /> | <img width="1508" alt="스크린샷 2025-04-29 오전 10 43 32" src="https://github.com/user-attachments/assets/ff78562a-b42c-4047-b2b5-2232c57270cb" /> |
 
 | 수정 이력 | 데이터 백업 |
 |------------|------------|
