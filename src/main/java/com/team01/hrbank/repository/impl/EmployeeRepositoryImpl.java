@@ -176,6 +176,27 @@ public class EmployeeRepositoryImpl implements EmployeeQueryRepository {
         for (int i = 1; i < periods.size(); i++) {
             LocalDate end = periods.get(i);
 
+            if (unit.equalsIgnoreCase("month")) {
+                end = end.withDayOfMonth(end.lengthOfMonth());
+            }
+
+            else if (unit.equalsIgnoreCase("quarter")) {
+                int month = end.getMonthValue();
+                if (month >= 1 && month <= 3) {
+                    end = LocalDate.of(end.getYear(), 3, 31);
+                } else if (month >= 4 && month <= 6) {
+                    end = LocalDate.of(end.getYear(), 6, 30);
+                } else if (month >= 7 && month <= 9) {
+                    end = LocalDate.of(end.getYear(), 9, 30);
+                } else {
+                    end = LocalDate.of(end.getYear(), 12, 31);
+                }
+            }
+
+            else if (unit.equalsIgnoreCase("year")) {
+                end = LocalDate.of(end.getYear(), 12, 31);
+            }
+
             Long currentCount = queryFactory
                 .select(employee.count())
                 .from(employee)
