@@ -41,9 +41,9 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         int size
     ) {
         // 1. 커서 값 검증 (idAfter 유효값 검증)
-        if(idAfter != null && changeLogRepository.existsById(idAfter)){
-            throw new IllegalArgumentException("유효하지 않은 커서 값입니다.: idAfter = " + idAfter);
-        }
+//        if(idAfter != null && changeLogRepository.existsById(idAfter)){
+//            throw new IllegalArgumentException("유효하지 않은 커서 값입니다.: idAfter = " + idAfter);
+//        }
 
         // 2. 데이터 조건 검색 (size + 1로 조회해 hasNext 판단)
         List<ChangeLog> logs = changeLogRepository.findByConditions(

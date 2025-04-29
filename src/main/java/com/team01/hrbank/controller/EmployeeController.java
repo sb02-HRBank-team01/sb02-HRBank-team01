@@ -7,6 +7,7 @@ import com.team01.hrbank.dto.employee.EmployeeDto;
 import com.team01.hrbank.dto.employee.EmployeeTrendDto;
 import com.team01.hrbank.dto.employee.EmployeeUpdateRequest;
 import com.team01.hrbank.service.EmployeeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -62,9 +63,10 @@ public class EmployeeController {
     )
     public ResponseEntity<EmployeeDto> save(
         @Valid @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
-        @RequestPart(value = "profile", required = false) MultipartFile profile
+        @RequestPart(value = "profile", required = false) MultipartFile profile,
+        HttpServletRequest servletRequest
     ) throws IOException {
-        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile);
+        EmployeeDto employeeDto = employeeService.save(employeeCreateRequest, profile, servletRequest);
         return ResponseEntity.ok(employeeDto);
     }
 
@@ -78,9 +80,10 @@ public class EmployeeController {
 
     @DeleteMapping("{id}")
     public  ResponseEntity<EmployeeDto> delete(
-        @PathVariable Long id
+        @PathVariable Long id,
+        HttpServletRequest servletRequest
     ) {
-        employeeService.delete(id);
+        employeeService.delete(id, servletRequest);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -91,9 +94,10 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDto> update(
         @PathVariable Long id,
         @Valid @RequestPart("employee") EmployeeUpdateRequest updateRequest,
-        @RequestPart(value = "profile", required = false) MultipartFile profile
+        @RequestPart(value = "profile", required = false) MultipartFile profile,
+        HttpServletRequest servletRequest
     ) throws IOException {
-        EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile);
+        EmployeeDto employeeDto = employeeService.update(updateRequest, id, profile, servletRequest);
         return ResponseEntity.ok(employeeDto);
     }
 

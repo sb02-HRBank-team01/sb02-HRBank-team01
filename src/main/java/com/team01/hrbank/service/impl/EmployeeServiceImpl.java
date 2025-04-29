@@ -23,6 +23,8 @@ import com.team01.hrbank.service.ChangeLogService;
 import com.team01.hrbank.service.EmployeeService;
 import com.team01.hrbank.storage.BinaryContentStorage;
 import com.team01.hrbank.util.DiffUtil;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -47,7 +49,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public EmployeeDto save(EmployeeCreateRequest employeeCreateRequest, MultipartFile profile) throws IOException {
+    public EmployeeDto save(EmployeeCreateRequest employeeCreateRequest, MultipartFile profile, HttpServletRequest request) throws IOException {
         if(employeeRepository.existsByEmail((employeeCreateRequest.email()))) {
             throw new DuplicateException(employeeCreateRequest.email());
         }
@@ -78,14 +80,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employeeRepository.save(employee);
 
+        // Client IP 가져오기
+        String ipAddress = getClientIp(request);
+
         // 직원 저장 후 changelog등록
         changeLogService.save(
             ChangeType.CREATED,
             employee.getEmployeeNumber(),
             // DiffDto는 변경 시 필요 -> 빈 리스트
             List.of(),
-            "직원 생성",
-            "127.0.0.1"
+            employeeCreateRequest.memo(),
+            ipAddress
         );
 
         if (binaryContent != null) {
@@ -93,6 +98,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         return employeeMapper.toDto(employee);
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
     }
 
     @Override
@@ -128,7 +147,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public EmployeeDto update(EmployeeUpdateRequest updateRequest, Long id, MultipartFile profile) throws IOException {
+    public EmployeeDto update(EmployeeUpdateRequest updateRequest, Long id, MultipartFile profile, HttpServletRequest request) throws IOException {
 
         Employee employee = employeeRepository.findWithDetailsById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
@@ -140,7 +159,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Department department = departmentRepository.findById(updateRequest.departmentId())
             .orElseThrow(() -> new EntityNotFoundException(DEPARTMENT, updateRequest.departmentId()));
 
-        BinaryContent binaryContent = null;
+        BinaryContent binaryContent = employee.getProfile();
+
         if (profile != null && !profile.isEmpty()) {
             binaryContent = new BinaryContent(
                 profile.getOriginalFilename(),
@@ -154,14 +174,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 수정 전/후 비교 후 변경 사항(diff) 기록
         List<DiffDto> diffs = DiffUtil.compare(employee, updateRequest);
 
-        // changelog 등록
+        // Client IP 가져오기
+        String ipAddress = getClientIp(request);
+
+        // 직원 저장 후 changelog등록
         changeLogService.save(
             ChangeType.UPDATED,
             employee.getEmployeeNumber(),
+            // DiffDto는 변경 시 필요 -> 빈 리스트
             diffs,
-            // TODO: memo, ipAdress는 사용자 입력 및 controller에서 제어 고려
-            "직원 정보 수정",
-            "127.0.0.1"
+            updateRequest.memo(),
+            ipAddress
         );
 
         employee.update(
@@ -176,7 +199,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employeeRepository.save(employee);
 
-        if (binaryContent != null) {
+        if (profile != null && !profile.isEmpty()) {
             binaryContentStorage.put(binaryContent.getId(), profile.getBytes());
         }
 
@@ -185,9 +208,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, HttpServletRequest request) {
         Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException(EMPLOYEE, id));
+
+        // Client IP 가져오기
+        String ipAddress = getClientIp(request);
 
         // changelog
         changeLogService.save(
@@ -195,8 +221,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.getEmployeeNumber(),
             List.of(),
             "직원 삭제",
-            "127.0.0.1"
+            ipAddress
         );
+
+
 
         employeeRepository.deleteById(id);
     }
